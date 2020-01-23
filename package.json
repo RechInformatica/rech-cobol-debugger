@@ -1,0 +1,137 @@
+{
+	"name": "rech-iscobol-debugger",
+	"displayName": "Rech isCOBOL Debugger",
+	"description": "Debug isCOBOL files with VSCode.",
+	"version": "0.0.1",
+	"publisher": "rechinformatica",
+	"engines": {
+		"vscode": "^1.35.0"
+	},
+	"icon": "images/rech-debugger.png",
+	"license": "SEE LICENSE IN LICENSE.txt",
+	"keywords": [
+		"rech iscobol debugger cobol"
+	],
+	"categories": [
+		"Debuggers"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/RechInformatica/rech-iscobol-debugger.git"
+	},
+	"bugs": {
+		"url": "https://github.com/RechInformatica/rech-iscobol-debugger/issues"
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"package": "vsce package --out F:/DIV/VSCode/extension/market/rech-iscobol-debugger/rech-iscobol-debugger.vsix",
+		"compile": "npm run tslint && tsc -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "npm run compile && mocha -r ts-node/register ./src/test/**/*.test.ts",
+		"tslint": "tslint --project tsconfig.json --config tslint.json"
+	},
+	"dependencies": {
+		"await-notify": "1.0.1",
+		"vscode-debugadapter": "1.38.0-pre.4",
+		"@types/q": "^1.0.0",
+		"q": "^1.4.1"
+	},
+	"devDependencies": {
+		"@types/node": "10.12.12",
+		"@types/mocha": "5.2.7",
+		"typescript": "3.5.3",
+		"mocha": "6.2.0",
+		"vscode": "1.1.36",
+		"vscode-debugadapter-testsupport": "1.37.0",
+		"tslint": "5.18.0",
+		"vsce": "1.66.0"
+	},
+	"main": "./out/extension",
+	"activationEvents": [
+		"onLanguage:COBOL",
+		"onDebug"
+	],
+	"contributes": {
+		"breakpoints": [
+			{
+				"language": "COBOL"
+			}
+		],
+		"languages": [
+			{
+				"id": "COBOL",
+				"aliases": [
+					"COBOL",
+					"Cobol",
+					"cobol"
+				],
+				"firstLine": ".*(\\$[sS][eE][tT]|[pP][rR][oO][gG][rR][aA][mM]\\-[iI][dD]|[iI][dD][eE][nN][tT][iI][fF][iI][cC][aA][tT][iI][oO][nN]).*",
+				"extensions": [
+					".cbl",
+					".cob",
+					".cpy",
+					".cpb",
+					".tpl"
+				],
+				"configuration": "./cobol.configuration.json"
+			}
+		],
+		"debuggers": [
+			{
+				"type": "COBOL",
+				"label": "isCOBOL debug",
+				"program": "./out/debugAdapter.js",
+				"runtime": "node",
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"program"
+						],
+						"properties": {
+							"program": {
+								"type": "string",
+								"description": "Absolute path to a text file.",
+								"default": "${workspaceFolder}/${command:ProgramName}"
+							},
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after launch.",
+								"default": true
+							},
+							"trace": {
+								"type": "boolean",
+								"description": "Enable logging of the Debug Adapter Protocol.",
+								"default": true
+							}
+						}
+					}
+				},
+				"initialConfigurations": [
+					{
+						"type": "COBOL",
+						"request": "launch",
+						"name": "isCOBOL Debugger",
+						"program": "${workspaceFolder}/${command:ProgramName}",
+						"stopOnEntry": true
+					}
+				],
+				"configurationSnippets": [
+					{
+						"label": "COBOL Debug: Launch",
+						"description": "A new configuration for 'debugging' a user selected COBOL file.",
+						"body": {
+							"type": "COBOL",
+							"request": "launch",
+							"name": "isCOBOL Debugger",
+							"program": "^\"\\${workspaceFolder}/\\${command:ProgramName}\"",
+							"stopOnEntry": true
+						}
+					}
+				],
+				"variables": {
+					"ProgramName": "extension.cobol-debug.getProgramName"
+				}
+			}
+		]
+	}
+}
