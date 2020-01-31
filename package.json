@@ -31,10 +31,10 @@
 		"tslint": "tslint --project tsconfig.json --config tslint.json"
 	},
 	"dependencies": {
-		"await-notify": "1.0.1",
-		"vscode-debugadapter": "1.38.0-pre.4",
 		"@types/q": "^1.0.0",
-		"q": "^1.4.1"
+		"await-notify": "1.0.1",
+		"q": "^1.4.1",
+		"vscode-debugadapter": "1.38.0-pre.4"
 	},
 	"devDependencies": {
 		"@types/node": "10.12.12",
@@ -49,6 +49,7 @@
 	"main": "./out/extension",
 	"activationEvents": [
 		"onLanguage:COBOL",
+		"onCommand:extension.cobol-debug.startDebugger",
 		"onDebug"
 	],
 	"contributes": {
@@ -76,6 +77,35 @@
 				"configuration": "./cobol.configuration.json"
 			}
 		],
+		"configuration": {
+			"type": "object",
+			"title": "Rech isCOBOL debug configurations",
+			"properties": {
+				"rech.iscobol.debug.params": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"title": "Parameters to be accept",
+						"properties": {
+							"precommands": {
+								"type": "string",
+								"description": "Parameter"
+							}
+						}
+					},
+					"default": [
+						"Please enter the COBOL file name to have the main method"
+					],
+					"description": "Parameters that will be accepted before running the debugger"
+				},
+				"rech.iscobol.debug.commandline": {
+					"type": "string",
+					"default": "isdbg $1",
+					"title": "Command Line",
+					"description": "Command line to start the debugger. Consider that the $ 1, $ 2, ... tags will be replaced by the respective responses in the same order in which they were questioned"
+				}
+			}
+		},
 		"debuggers": [
 			{
 				"type": "COBOL",
@@ -85,13 +115,13 @@
 				"configurationAttributes": {
 					"launch": {
 						"required": [
-							"program"
+							"commandLine"
 						],
 						"properties": {
-							"program": {
+							"commandLine": {
 								"type": "string",
-								"description": "Absolute path to a text file.",
-								"default": "${workspaceFolder}/${command:ProgramName}"
+								"description": "Command line to run the debugger application",
+								"default": "${command:commandLineBuild}"
 							},
 							"stopOnEntry": {
 								"type": "boolean",
@@ -111,7 +141,7 @@
 						"type": "COBOL",
 						"request": "launch",
 						"name": "isCOBOL Debugger",
-						"program": "${workspaceFolder}/${command:ProgramName}",
+						"commandLine": "${command:commandLineBuild}",
 						"stopOnEntry": true
 					}
 				],
@@ -123,13 +153,13 @@
 							"type": "COBOL",
 							"request": "launch",
 							"name": "isCOBOL Debugger",
-							"program": "^\"\\${workspaceFolder}/\\${command:ProgramName}\"",
+							"commandLine": "^\"\\${command:commandLineBuild}\"",
 							"stopOnEntry": true
 						}
 					}
 				],
 				"variables": {
-					"ProgramName": "extension.cobol-debug.getProgramName"
+					"commandLineBuild": "extension.cobol-debug.startDebugger"
 				}
 			}
 		]

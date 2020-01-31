@@ -41,6 +41,14 @@ export interface DebugInterface {
 	requestVariableValue(variable: string): Promise<string>;
 
 	/**
+	 * Changes variable value
+	 *
+	 * @param variable variable name
+	 * @param newValue new value of the specified variable
+	 */
+	changeVariableValue(variable: string, newValue: string): Promise<void>;
+
+	/**
 	 * Adds a new Breakpoint
 	 *
 	 * @param breakpoint breakpoint to set

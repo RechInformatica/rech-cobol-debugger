@@ -37,11 +37,11 @@ export class CobolDebugSession extends DebugSession {
 	/** Content of the current debugged line */
 	private currentDebuggerOutput: string = "";
     /** Implementatin to send debug commands to external COBOL debug process */
-	private debugRuntime: DebugInterface = new IsCobolDebug();
+	private debugRuntime: DebugInterface | undefined;
     /** Variable handles to group variables within sections */
 	private variableHandles = new Handles<string>();
 	/** Class to manage source breakpoints */
-	private breakpointManager = new BreakpointManager(this.debugRuntime);
+	private breakpointManager: BreakpointManager | undefined;
 
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
@@ -87,6 +87,7 @@ export class CobolDebugSession extends DebugSession {
 	protected initializeRequest(response: DebugProtocol.InitializeResponse, _args: DebugProtocol.InitializeRequestArguments): void {
 		response.body = response.body || {};
 		response.body.supportsTerminateRequest = true;
+		response.body.supportsSetVariable = true;
 		this.sendResponse(response);
 		// since this debug adapter can accept configuration requests like 'setBreakpoint' at any time,
 		// we request them early by sending an 'initializeRequest' to the frontend.
@@ -104,9 +105,11 @@ export class CobolDebugSession extends DebugSession {
 		this.configurationDone.notify();
 	}
 
-	protected async launchRequest(response: DebugProtocol.LaunchResponse, _args: DebugProtocol.LaunchRequestArguments) {
+	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
 		// wait until configuration has finished (and configurationDoneRequest has been called)
 		await this.configurationDone.wait(DELAY_MS_CONFIGURATION_FINISHED);
+		const commandLine = (<any> args).commandLine;
+		this.debugRuntime =  new IsCobolDebug(commandLine);
 		this.debugRuntime.start().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
 		}).catch(() => {
@@ -115,6 +118,10 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		if (!this.breakpointManager) this.breakpointManager = new BreakpointManager(this.debugRuntime)
 		this.breakpointManager.setBreakpoints(args.source, args.breakpoints).then((breakpoints) => {
 			response.body = {
 				breakpoints: breakpoints
@@ -149,6 +156,9 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected nextRequest(response: DebugProtocol.NextResponse, _args: DebugProtocol.NextArguments): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
 		this.debugRuntime.next().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnStep", response);
 		}).catch(() => {
@@ -157,6 +167,9 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, _args: DebugProtocol.ContinueArguments): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
 		this.debugRuntime.continue().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnBreakpoint", response);
 		}).catch(() => {
@@ -165,6 +178,9 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected stepInRequest(response: DebugProtocol.StepInResponse, _args: DebugProtocol.StepInArguments): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
 		this.debugRuntime.stepIn().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnStep", response);
 		}).catch(() => {
@@ -173,6 +189,9 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected stepOutRequest(response: DebugProtocol.StepOutResponse, _args: DebugProtocol.StepOutArguments): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
 		this.debugRuntime.stepOut().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnStep", response);
 		}).catch(() => {
@@ -191,6 +210,9 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected async terminateRequest(response: DebugProtocol.TerminateResponse, _args: DebugProtocol.TerminateArguments): Promise<void> {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
 		await this.debugRuntime.stop();
 		this.fireTerminateDebugEvent(response);
 	}
@@ -209,7 +231,44 @@ export class CobolDebugSession extends DebugSession {
 		}
 	}
 
+	protected setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments, _request?: DebugProtocol.Request): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		this.debugRuntime.changeVariableValue(args.name, args.value).then(() => {
+			response.body = {
+				value: args.value
+			};
+			this.sendResponse(response);
+		}).catch(() => {
+			this.fireTerminateDebugEvent(response);
+		});
+	}
+
+	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments, _request?: DebugProtocol.Request): void {
+		let reply: string | undefined = undefined;
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		if (args.context === 'watch') {
+			console.log("dentro do watch")
+			new VariableParser(this.debugRuntime).createVariable(args.expression).then((variable) => {
+				response.body = {
+					result: variable.value,
+					variablesReference: 0
+				};
+				this.sendResponse(response);
+			}).catch(() => {
+				this.sendResponse(response);
+			});
+		}
+	}
+
+
 	private resolveLastLineVariables(response: DebugProtocol.VariablesResponse) {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
 		new VariableParser(this.debugRuntime).parse(this.lastDebuggerOutput).then((variables) => {
 			response.body = {
 				variables: variables
@@ -221,6 +280,9 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	private resolveCurrentLineVariables(response: DebugProtocol.VariablesResponse) {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
 		new VariableParser(this.debugRuntime).parse(this.currentDebuggerOutput).then((variables) => {
 			response.body = {
 				variables: variables

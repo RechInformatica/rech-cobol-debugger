@@ -45,10 +45,10 @@
 			"internalConsoleOptions": "openOnSessionStart"
 		},
 		{
-			"name": "isCOBOL debug",
 			"type": "COBOL",
 			"request": "launch",
-			"program": "${workspaceFolder}/${command:AskForProgramName}",
+			"name": "isCOBOL Debugger",
+			"commandLine": "${command:commandLineBuild}",
 			"stopOnEntry": true
 		}
 	],

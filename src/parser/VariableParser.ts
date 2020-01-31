@@ -84,7 +84,7 @@ export class VariableParser {
 		let method = false;
 		for (let i = 0; i < currentLine.length; i++) {
 			const character = currentLine[i];
-			const lookAhead = (i + 1) < currentLine.length? currentLine[ i + 1] : "";
+			const lookAhead = (i + 1) < currentLine.length ? currentLine[i + 1] : "";
 			if (!quotes && character == "\"") {
 				quotes = true;
 				continue;
@@ -134,11 +134,10 @@ export class VariableParser {
 	 *
 	 * @param word variable name
 	 */
-	private createVariable(word: string): Promise<DebugProtocol.Variable> {
+	public createVariable(word: string): Promise<DebugProtocol.Variable> {
 		return new Promise((resolve, reject) => {
 			console.log("Current var: " + word);
-			this.debugRuntime.requestVariableValue
-			(word).then((result) => {
+			this.debugRuntime.requestVariableValue(word).then((result) => {
 				const value = VariableParser.createVariableValueRegex(word).exec(result);
 				if (value && value[1]) {
 					return resolve({

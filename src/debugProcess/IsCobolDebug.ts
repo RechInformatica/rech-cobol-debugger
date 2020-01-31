@@ -8,9 +8,9 @@ import { CobolBreakpoint } from "./DebugBreakpoint";
 /** Delay in milliseconds to wait for debugger setup */
 const DELAY_WAIT_DEBUGGER_SETUP = 3000;
 /** Delay in milliseconds to wait check for debug output */
-const DELAY_WAIT_DEBUG_OUTPUT = 50;
+const DELAY_WAIT_DEBUG_OUTPUT = 3;
 /** Delay in milliseconds to fire again the same command in case of debugger doesn't respond properly */
-const DELAY_WAIT_RECURSIVE_COMMAND = 250;
+const DELAY_WAIT_RECURSIVE_COMMAND = 50;
 /** Timeout for commands that return the current debug position */
 const TIMEOUT_DEBUG_POSITION_COMMAND = 10000;
 /** Timeout for commands that return the current debug position */
@@ -41,8 +41,11 @@ export class IsCobolDebug implements DebugInterface {
 	private startedRunning: boolean;
 	/** Tells wheter debugger is ready to receive the next command */
 	private readyForNextCommand: boolean;
+	/** Command line to starts the debugger process */
+	private commantLineToStartsProcess: string;
 
-	constructor() {
+	constructor(commantLineToStartsProcess: string) {
+		this.commantLineToStartsProcess = commantLineToStartsProcess;
 		this.startedRunning = false;
 		this.readyForNextCommand = true;
 		this.debugProcess = this.spawnExternalDebuggerProcess();
@@ -100,6 +103,21 @@ export class IsCobolDebug implements DebugInterface {
 			}).catch(async (error) => {
 				return reject(error);
 			});
+		});
+	}
+
+	changeVariableValue(variable: string, newValue: string): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const command = "let " + variable + "=" + newValue;
+			const possibleOutputResults: RegExp[] = [];
+			possibleOutputResults.push(new RegExp(`new\\s+value\\s+of\\s+${variable}\\s+is\\s+`, "gi"));
+			possibleOutputResults.push(new RegExp(`not\\s+a\\s+Cobol\\s+variable\\s+\\'${variable}\\'`, "gi"));
+			possibleOutputResults.push(new RegExp(`data-item\\s+not\\s+found\\s+\\'${variable}\\'`, "gi"));
+			this.sendCommand(command, possibleOutputResults).then(() => {
+				return resolve();
+			}).catch((e) => {
+				return reject(e);
+			})
 		});
 	}
 
@@ -248,7 +266,7 @@ export class IsCobolDebug implements DebugInterface {
 	 * Creates the external debugger process and configure standard output error output callbacks
 	 */
 	private spawnExternalDebuggerProcess(): ChildProcess {
-		const child = exec("DebuggerSigerVSCode.bat");
+		const child = exec(this.commantLineToStartsProcess);
 		child.stdout.on('data', (outdata) => {
 			this.lastResponse = this.lastResponse + outdata.toString();
 			console.log(this.lastResponse);

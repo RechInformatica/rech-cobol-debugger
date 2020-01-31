@@ -15,13 +15,13 @@ export class CobolConfigurationProvider implements DebugConfigurationProvider {
 				config.type = 'COBOL';
 				config.name = 'Launch';
 				config.request = 'launch';
-				config.program = '${file}';
+				config.commandLine = '${commandLine}';
 				config.stopOnEntry = true;
 			}
 		}
 
-		if (!config.program) {
-			return window.showInformationMessage("Cannot find a program to debug").then(_ => {
+		if (!config.commandLine) {
+			return window.showInformationMessage("Invalid commandLine").then(_ => {
 				return undefined;	// abort launch
 			});
 		}

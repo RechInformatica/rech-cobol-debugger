@@ -3,6 +3,9 @@ import { DebugInterface } from "../debugProcess/DebugInterface";
 import { window } from 'vscode';
 import Q from 'q';
 
+/** Position within String where colon is located */
+const WINDOWS_COLON_DRIVE_POSITION = 2;
+
 /**
  * Class to manage source breakpoints
  */
@@ -65,7 +68,7 @@ export class BreakpointManager {
 		// Sometimes VSCode API returns, in the same path, slashes and backslashes
 		normalized = normalized.replace(/\\/g, "/");
 		// Sometimes VSCode API returns Windows drive letter with uppercase and sometimes with lowercase
-		if (normalized.length > 2 && normalized[1] == ":") {
+		if (normalized.length > WINDOWS_COLON_DRIVE_POSITION && normalized[WINDOWS_COLON_DRIVE_POSITION - 1] == ":") {
 			normalized = normalized[0].toUpperCase() + normalized.slice(1);
 		}
 		return normalized;

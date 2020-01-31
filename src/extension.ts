@@ -3,12 +3,27 @@
 import { ExtensionContext, commands, window, debug, DebugAdapterDescriptorFactory } from 'vscode';
 import { CobolConfigurationProvider } from './CobolConfigurationProvider';
 import { CobolDebugAdapterDescriptorFactory } from './CobolDebugAdapterDescriptorFactory';
+import { Configuration } from './helper/Configuration';
+import Q from 'q';
 
 export function activate(context: ExtensionContext) {
 
-	context.subscriptions.push(commands.registerCommand('extension.cobol-debug.getProgramName', _config => {
-		return new Promise<string>((resolve) => {
-			resolve("TUFUNFIL.CBL");
+	const configuration = new Configuration("rech.iscobol.debug")
+
+	context.subscriptions.push(commands.registerCommand('extension.cobol-debug.startDebugger', _config => {
+		return new Promise<string>(async (resolve) => {
+			const questions = configuration.get<string[]>("params");
+			let commandLine = configuration.get<string>("commandline");
+			for (let i = 0; i < questions.length; i++) {
+				const question = questions[i];
+				const response = await askParameter(question);
+				if (response) {
+					const token = `$${i + 1}`;
+					commandLine = commandLine.replace(token, response!);
+				}
+
+			}
+			return resolve(commandLine);
 		});
 	}));
 
@@ -22,6 +37,14 @@ export function activate(context: ExtensionContext) {
 	if ('dispose' in factory) {
 		context.subscriptions.push(factory);
 	}
+}
+
+function askParameter(question: string): Thenable<string | undefined> {
+	return new Promise((resolve, reject) => {
+		window.showInputBox({placeHolder: question, ignoreFocusOut: true}).then((response) => {
+			resolve(response);
+		}, (e) => reject(e));
+	});
 }
 
 export function deactivate() {
