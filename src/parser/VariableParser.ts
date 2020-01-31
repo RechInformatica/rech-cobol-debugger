@@ -143,7 +143,8 @@ export class VariableParser {
 					return resolve({
 						name: word,
 						value: value[1],
-						variablesReference: 0
+						variablesReference: 0,
+						evaluateName: word
 					})
 				}
 				return reject("cant parse " + result);
