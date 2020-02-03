@@ -252,7 +252,7 @@ export class CobolDebugSession extends DebugSession {
 		}
 		if (args.context === 'watch') {
 			console.log("dentro do watch")
-			new VariableParser(this.debugRuntime).createVariable(args.expression).then((variable) => {
+			new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
 				response.body = {
 					result: variable.value,
 					variablesReference: 0

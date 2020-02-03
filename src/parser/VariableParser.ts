@@ -33,7 +33,7 @@ export class VariableParser {
 			const variableNames = this.extractNamesFromOutput(output);
 			const variablesPromises: Promise<DebugProtocol.Variable>[] = [];
 			variableNames.forEach(name => {
-				variablesPromises.push(this.createVariable(name));
+				variablesPromises.push(this.captureVariableInfo(name));
 			});
 			Q.allSettled(variablesPromises).then((results) => {
 				results.forEach((result) => {
@@ -129,25 +129,16 @@ export class VariableParser {
 		return true;
 	}
 
-	/**
-	 * Creates a variable instance related to the specified word
-	 *
-	 * @param word variable name
-	 */
-	public createVariable(word: string): Promise<DebugProtocol.Variable> {
+	public captureVariableInfo(variableName: string): Promise<DebugProtocol.Variable> {
 		return new Promise((resolve, reject) => {
-			console.log("Current var: " + word);
-			this.debugRuntime.requestVariableValue(word).then((result) => {
-				const value = VariableParser.createVariableValueRegex(word).exec(result);
-				if (value && value[1]) {
-					return resolve({
-						name: word,
-						value: value[1],
-						variablesReference: 0,
-						evaluateName: word
-					})
-				}
-				return reject("cant parse " + result);
+			console.log("Current var: " + variableName);
+			this.debugRuntime.requestVariableValue(variableName).then((variableValue) => {
+				return resolve({
+					name: variableName,
+					value: variableValue,
+					variablesReference: 0,
+					evaluateName: variableName
+				});
 			}).catch((e) => {
 				reject(e);
 			})

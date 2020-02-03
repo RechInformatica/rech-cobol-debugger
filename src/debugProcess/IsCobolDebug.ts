@@ -4,6 +4,8 @@ import { DebugPosition } from "./DebugPosition";
 import { StepParser } from "../parser/StepParser";
 import { VariableParser } from "../parser/VariableParser";
 import { CobolBreakpoint } from "./DebugBreakpoint";
+import { Variable } from "vscode-debugadapter";
+import { DisplayCommandParser } from "./DisplayCommandParser";
 
 /** Delay in milliseconds to wait for debugger setup */
 const DELAY_WAIT_DEBUGGER_SETUP = 3000;
@@ -94,12 +96,28 @@ export class IsCobolDebug implements DebugInterface {
 		});
 	}
 
-	requestVariableValue(variable: string): Promise<string> {
+	/**
+	 * Captures variable information considering extra isCobol parameters.
+	 * Some of these parameteres are to retrieve value in hexadecimal format or show variable children.
+	 *
+	 * For example:
+	 *       '-x <my-var>' -> shows hexadecimal value
+	 *    '-tree <my-var>' -> shows variable with children
+	 *
+	 * @param args variable with optional isCobol 'display' parameters
+	 */
+	requestVariableValue(args: string): Promise<string> {
 		return new Promise(async (resolve, reject) => {
-			const command = this.buildDisplayCommand(variable);
+			const command = `display ${args}`;
+			const variable = new DisplayCommandParser().parseArguments(args).variableName;
 			const expectedRegexes = [VariableParser.createVariableValueRegex(variable), this.createVariableNotFoundRegex(variable)];
 			this.sendRecursiveCommand(0, MAX_VARIABLE_DISPLAY_ATTEMPTS, command, expectedRegexes).then((result) => {
-				return resolve(result)
+				const value = VariableParser.createVariableValueRegex(variable).exec(result);
+				if (value && value[1]) {
+					return resolve(value[1])
+				} else {
+					return reject("cant parse " + result);
+				}
 			}).catch(async (error) => {
 				return reject(error);
 			});
@@ -185,9 +203,11 @@ export class IsCobolDebug implements DebugInterface {
 	 * Builds the command to display variable value from isCobol debugger
 	 *
 	 * @param variable variable name
+	 * @param extraArguments extra arguments to isCobol externam debugger
 	 */
-	private buildDisplayCommand(variable: string): string {
-		const command = `display ${variable}`;
+	private buildDisplayCommand(variable: string, extraArguments?: string): string {
+		extraArguments = extraArguments ? extraArguments : "";
+		const command = `display ${extraArguments} ${variable}`;
 		return command;
 	}
 
