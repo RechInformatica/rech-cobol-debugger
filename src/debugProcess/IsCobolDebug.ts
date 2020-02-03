@@ -110,8 +110,12 @@ export class IsCobolDebug implements DebugInterface {
 		return new Promise(async (resolve, reject) => {
 			const command = `display ${args}`;
 			const variable = new DisplayCommandParser().parseArguments(args).variableName;
-			const expectedRegexes = [VariableParser.createVariableValueRegex(variable), this.createVariableNotFoundRegex(variable)];
-			this.sendRecursiveCommand(0, MAX_VARIABLE_DISPLAY_ATTEMPTS, command, expectedRegexes).then((result) => {
+			const possibleOutputResults: RegExp[] = [];
+			possibleOutputResults.push(VariableParser.createVariableValueRegex(variable));
+			possibleOutputResults.push(this.createVariableNotFoundRegex(variable));
+			possibleOutputResults.push(this.createNotVariableOutputRegex(variable));
+			possibleOutputResults.push(new RegExp(`Error\\:\\s+subscript\\s+required\\s+\\'${variable}\\'`, "gi"));
+			this.sendRecursiveCommand(0, MAX_VARIABLE_DISPLAY_ATTEMPTS, command, possibleOutputResults).then((result) => {
 				const value = VariableParser.createVariableValueRegex(variable).exec(result);
 				if (value && value[1]) {
 					return resolve(value[1])
@@ -129,7 +133,7 @@ export class IsCobolDebug implements DebugInterface {
 			const command = "let " + variable + "=" + newValue;
 			const possibleOutputResults: RegExp[] = [];
 			possibleOutputResults.push(new RegExp(`new\\s+value\\s+of\\s+${variable}\\s+is\\s+`, "gi"));
-			possibleOutputResults.push(new RegExp(`not\\s+a\\s+Cobol\\s+variable\\s+\\'${variable}\\'`, "gi"));
+			possibleOutputResults.push(this.createNotVariableOutputRegex(variable));
 			possibleOutputResults.push(new RegExp(`data-item\\s+not\\s+found\\s+\\'${variable}\\'`, "gi"));
 			this.sendCommand(command, possibleOutputResults).then(() => {
 				return resolve();
@@ -167,6 +171,16 @@ export class IsCobolDebug implements DebugInterface {
 				return reject(error);
 			});
 		})
+	}
+
+	/**
+	 * Creates a Regular Expression to detect isCobol debugger output, indicating that the specified word is not
+	 * a Cobol variable
+	 *
+	 * @param variable variable to consider in Regular Expression
+	 */
+	private createNotVariableOutputRegex(variable: string): RegExp {
+		return new RegExp(`not\\s+a\\s+Cobol\\s+variable\\s+\\'${variable}\\'`, "gi");
 	}
 
 	private buildRemoveBreakpointCommand(breakpoint: CobolBreakpoint) {

@@ -122,15 +122,15 @@
         "signature": "e3a7fe7ead420e9d927473839b73bb4acd56469f579ffbf91560a79cce63bfc7"
       },
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts": {
-        "version": "bb491a3c4305bfaf0435b91e5a43ffc4e6382dd96ec05884f6fc7433fba92c33",
-        "signature": "d11093bc36792089121420e688d606dc857a68d986f64ebf9bdcd1d17ff80a07"
+        "version": "c63777de038ab2413fc39bbe38f06552e0051d9ef86a1216ec9c41d7c4d830cb",
+        "signature": "199ccb1ccd9b71cb23bd89938e9298326d959cb109cb63a9842427533af5342f"
       },
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts": {
         "version": "c6d4a80f7d3464d5d4090638cc2f810ef378d366a32bb8e4c2ff639a6e0e28e6",
         "signature": "7194e47afd1e095bb1e0c17ff73ff37318692261ae95198547cf2b7b74985de1"
       },
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/coboldebug.ts": {
-        "version": "08c009d81ad1380de5d62426f498f7d7971dfc26d912ba07722b73c9ac5ce478",
+        "version": "629b45bcdeff73d3b258724f3aaf4d4d837edbe9708039dddd2ce04e328eaf89",
         "signature": "d79db46caeb3324c37b8f0b301e8f5042a295a938525e26bce7f6e65ce8aaa7f"
       },
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts": {
@@ -370,6 +370,7 @@
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/parser/stepparser.ts",
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/node_modules/@types/q/index.d.ts",
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/parser/variableparser.ts",
+      "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/debugprocess/displaycommandparser.ts",
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts",
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/coboldebug.ts",
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts",
@@ -377,7 +378,6 @@
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/helper/configuration.ts",
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/extension.ts",
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts",
-      "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/debugprocess/displaycommandparser.ts",
       "c:/users/cassel/.vscode/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts"
     ]
   },

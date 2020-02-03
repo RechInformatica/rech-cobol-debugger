@@ -246,7 +246,6 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments, _request?: DebugProtocol.Request): void {
-		let reply: string | undefined = undefined;
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
