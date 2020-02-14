@@ -109,12 +109,14 @@ export class CobolDebugSession extends DebugSession {
 		// wait until configuration has finished (and configurationDoneRequest has been called)
 		await this.configurationDone.wait(DELAY_MS_CONFIGURATION_FINISHED);
 		const commandLine = (<any> args).commandLine;
-		this.debugRuntime =  new IsCobolDebug(commandLine);
-		this.debugRuntime.start().then((position) => {
-			this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
-		}).catch(() => {
-			this.fireTerminateDebugEvent(response);
-		});
+		this.debugRuntime = new IsCobolDebug(commandLine);
+		this.debugRuntime.setup().then(() => {
+			this.debugRuntime!.start().then((position) => {
+				this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
+			}).catch(() => {
+				this.fireTerminateDebugEvent(response);
+			});
+		}).catch();
 	}
 
 	protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
@@ -250,7 +252,6 @@ export class CobolDebugSession extends DebugSession {
 			return this.sendResponse(response);
 		}
 		if (args.context === 'watch') {
-			console.log("dentro do watch")
 			new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
 				response.body = {
 					result: variable.value,
@@ -291,7 +292,6 @@ export class CobolDebugSession extends DebugSession {
 		}).catch(() => {
 			this.sendResponse(response);
 		});
-
 	}
 
 	/**

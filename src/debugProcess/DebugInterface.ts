@@ -4,6 +4,11 @@ import { CobolBreakpoint } from "./DebugBreakpoint";
 export interface DebugInterface {
 
 	/**
+	 * Setups debugger execution
+	 */
+	setup(): Promise<void>;
+
+	/**
 	 * Starts debugger returning the information of it's first line
 	 */
 	start(): Promise<DebugPosition>;

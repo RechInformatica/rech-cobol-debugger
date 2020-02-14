@@ -131,7 +131,6 @@ export class VariableParser {
 
 	public captureVariableInfo(variableName: string): Promise<DebugProtocol.Variable> {
 		return new Promise((resolve, reject) => {
-			console.log("Current var: " + variableName);
 			this.debugRuntime.requestVariableValue(variableName).then((variableValue) => {
 				return resolve({
 					name: variableName,
