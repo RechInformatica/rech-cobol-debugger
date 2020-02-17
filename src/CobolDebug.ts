@@ -42,6 +42,8 @@ export class CobolDebugSession extends DebugSession {
 	private variableHandles = new Handles<string>();
 	/** Class to manage source breakpoints */
 	private breakpointManager: BreakpointManager | undefined;
+	/** Indicates wheter the code is running or not */
+	private running: boolean = false;
 
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
@@ -161,7 +163,7 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected nextRequest(response: DebugProtocol.NextResponse, _args: DebugProtocol.NextArguments): void {
-		if (!this.debugRuntime) {
+		if (!this.debugRuntime || this.running) {
 			return this.sendResponse(response);
 		}
 		this.fireContinuedEvent();
@@ -173,7 +175,7 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, _args: DebugProtocol.ContinueArguments): void {
-		if (!this.debugRuntime) {
+		if (!this.debugRuntime || this.running) {
 			return this.sendResponse(response);
 		}
 		this.fireContinuedEvent();
@@ -185,7 +187,7 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected stepInRequest(response: DebugProtocol.StepInResponse, _args: DebugProtocol.StepInArguments): void {
-		if (!this.debugRuntime) {
+		if (!this.debugRuntime || this.running) {
 			return this.sendResponse(response);
 		}
 		this.fireContinuedEvent();
@@ -197,7 +199,7 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected stepOutRequest(response: DebugProtocol.StepOutResponse, _args: DebugProtocol.StepOutArguments): void {
-		if (!this.debugRuntime) {
+		if (!this.debugRuntime || this.running) {
 			return this.sendResponse(response);
 		}
 		this.fireContinuedEvent();
@@ -318,6 +320,7 @@ export class CobolDebugSession extends DebugSession {
 	 * that a possible heavy operation is being performed
 	 */
 	private fireContinuedEvent(): void {
+		this.running = true;
 		setImmediate(_ => {
 			this.emitter.emit("continued");
 		});
@@ -331,6 +334,7 @@ export class CobolDebugSession extends DebugSession {
 	 * @param response debug response
 	 */
 	private fireDebugLineChangedEvent(position: DebugPosition, event: string, response: DebugProtocol.Response): void {
+		this.running = false;
 		this.updateCurrentPositionInfo(position);
 		setImmediate(_ => {
 			this.emitter.emit(event);
