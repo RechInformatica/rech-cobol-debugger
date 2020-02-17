@@ -4,7 +4,7 @@
 
 import {
 	InitializedEvent, TerminatedEvent, StoppedEvent, OutputEvent,
-	Source, DebugSession, Thread, Scope, Handles
+	Source, DebugSession, Thread, Scope, Handles, ContinuedEvent
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { basename } from 'path';
@@ -30,15 +30,15 @@ export class CobolDebugSession extends DebugSession {
 	private currentSourceName = "";
 	/** Object to help notifying VSCode API when extension is configured and prepared for running */
 	private configurationDone = new Subject();
-    /** Emitter of VSCode debugger API events */
+	/** Emitter of VSCode debugger API events */
 	private emitter = new EventEmitter();
-    /** Content of the last debugged line */
+	/** Content of the last debugged line */
 	private lastDebuggerOutput: string = "";
 	/** Content of the current debugged line */
 	private currentDebuggerOutput: string = "";
-    /** Implementatin to send debug commands to external COBOL debug process */
+	/** Implementatin to send debug commands to external COBOL debug process */
 	private debugRuntime: DebugInterface | undefined;
-    /** Variable handles to group variables within sections */
+	/** Variable handles to group variables within sections */
 	private variableHandles = new Handles<string>();
 	/** Class to manage source breakpoints */
 	private breakpointManager: BreakpointManager | undefined;
@@ -67,6 +67,9 @@ export class CobolDebugSession extends DebugSession {
 		});
 		this.emitter.on('stopOnException', () => {
 			this.sendEvent(new StoppedEvent('exception', CobolDebugSession.THREAD_ID));
+		});
+		this.emitter.on('continued', () => {
+			this.sendEvent(new ContinuedEvent(CobolDebugSession.THREAD_ID, true));
 		});
 		this.emitter.on('output', (text, filePath, line, column) => {
 			const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
@@ -108,7 +111,7 @@ export class CobolDebugSession extends DebugSession {
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
 		// wait until configuration has finished (and configurationDoneRequest has been called)
 		await this.configurationDone.wait(DELAY_MS_CONFIGURATION_FINISHED);
-		const commandLine = (<any> args).commandLine;
+		const commandLine = (<any>args).commandLine;
 		this.debugRuntime = new IsCobolDebug(commandLine);
 		this.debugRuntime.setup().then(() => {
 			this.debugRuntime!.start().then((position) => {
@@ -161,6 +164,7 @@ export class CobolDebugSession extends DebugSession {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
+		this.fireContinuedEvent();
 		this.debugRuntime.next().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnStep", response);
 		}).catch(() => {
@@ -172,6 +176,7 @@ export class CobolDebugSession extends DebugSession {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
+		this.fireContinuedEvent();
 		this.debugRuntime.continue().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnBreakpoint", response);
 		}).catch(() => {
@@ -183,6 +188,7 @@ export class CobolDebugSession extends DebugSession {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
+		this.fireContinuedEvent();
 		this.debugRuntime.stepIn().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnStep", response);
 		}).catch(() => {
@@ -194,6 +200,7 @@ export class CobolDebugSession extends DebugSession {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
+		this.fireContinuedEvent();
 		this.debugRuntime.stepOut().then((position) => {
 			this.fireDebugLineChangedEvent(position, "stopOnStep", response);
 		}).catch(() => {
@@ -221,7 +228,7 @@ export class CobolDebugSession extends DebugSession {
 
 	protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, _request?: DebugProtocol.Request) {
 		const reference = this.variableHandles.get(args.variablesReference);
-		switch(reference) {
+		switch (reference) {
 			case CURRENT_LINE_SCOPE_NAME: {
 				this.resolveCurrentLineVariables(response);
 				break;
@@ -304,6 +311,16 @@ export class CobolDebugSession extends DebugSession {
 			this.emitter.emit("end");
 		});
 		this.sendResponse(response);
+	}
+
+	/**
+	 * Fires continued event to change Debugger UI control buttons and indicate
+	 * that a possible heavy operation is being performed
+	 */
+	private fireContinuedEvent(): void {
+		setImmediate(_ => {
+			this.emitter.emit("continued");
+		});
 	}
 
 	/**
