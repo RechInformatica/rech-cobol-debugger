@@ -11,7 +11,7 @@ const MATCH_FILE_INDEX = 2;
 export class StepParser {
 
 	public parse(output: string): DebugPosition | undefined {
-		const match = /line=(\d+)\s+file=([\w\.:\\/]+)/gi.exec(output);
+		const match = /line=(\d+)\s+file=([\w\.:\\/\-]+)/gi.exec(output);
 		if (match && match.length > MATCH_FILE_INDEX) {
 			return ({
 				file: match[MATCH_FILE_INDEX],
