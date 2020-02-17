@@ -6,7 +6,7 @@ export interface DebugInterface {
 	/**
 	 * Setups debugger execution
 	 */
-	setup(): Promise<void>;
+	setup(): Promise<DebugPosition>;
 
 	/**
 	 * Starts debugger returning the information of it's first line

@@ -102,8 +102,8 @@
         "signature": "c175c9d4243be637315ac9dca27b7c8bf50b18e805426a653791056a247e57df"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts": {
-        "version": "93656fb77ce360e495d016ee41b59748c57c5d0717a923e40e95a71ef8a7f8dd",
-        "signature": "abbb46a6ffc9d6b6e825fb57f35e1b1bc72ee7e5691edacf39152c71e2314ef6"
+        "version": "2ae301899965f9e358f2f36a151b876af390b5e087bd095046052d3bee12ca95",
+        "signature": "64c5e5f4b185dcb47e7af07b4ba21473f8ac4e56de23fe1e519a7d77cf89aa76"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/stepparser.ts": {
         "version": "29f16a1bbed1c6a6d06084e1ab3ee756ba8539602381bd862b140c328c0b5d71",
@@ -126,8 +126,8 @@
         "signature": "605c50eb75d67a068e6bbcc9caae803a5931c038ec253356dc3d111d3e971e97"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts": {
-        "version": "5e317cecac6a55bc86cc8241dd220d7d53317c4e7596a9155a275d8b5d70a71d",
-        "signature": "33f332705f8a484696777e4f62079d18b73f7aff6a0063fa13b2435c48d5ac3e"
+        "version": "b57ae4ab06a4262c4fff0d8f946e520e59aa8aa5a463cb18456a38ef1866b393",
+        "signature": "31b3601158bdca426f4aa57711252af49617616a9ba36a8a7fdb13ccba041b08"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts": {
         "version": "c6d4a80f7d3464d5d4090638cc2f810ef378d366a32bb8e4c2ff639a6e0e28e6",

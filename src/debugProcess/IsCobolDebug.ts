@@ -26,20 +26,8 @@ export class IsCobolDebug implements DebugInterface {
 	/**
 	 * Setups isCobol external debugger
 	 */
-	public setup(): Promise<void> {
-		return new Promise<void>((resolve, reject) => {
-			delay(DELAY_WAIT_DEBUGGER_SETUP).then(() => {
-				const regexes = [];
-				regexes.push(/Debugger\sis\salready\srunning/);
-				this.sendCommand(RUN_DEBUGGER_COMMAND, regexes).then(() => {
-					return resolve();
-				}).catch(() => {
-					return reject();
-				});
-			}).catch(() => {
-				return reject();
-			});
-		});
+	public setup(): Promise<DebugPosition> {
+		return this.sendDebugPositionCommand("");
 	}
 
 	start(): Promise<DebugPosition> {
@@ -91,6 +79,7 @@ export class IsCobolDebug implements DebugInterface {
 			possibleOutputResults.push(this.createVariableNotFoundRegex(variable));
 			possibleOutputResults.push(this.createNotVariableOutputRegex(variable));
 			possibleOutputResults.push(new RegExp(`Error\\:\\s+subscript\\s+required\\s+\\'${variable}\\'`, "gi"));
+			possibleOutputResults.push(/property\s+required/);
 			this.sendCommand(command, possibleOutputResults).then((result) => {
 				const value = VariableParser.createVariableValueRegex(variable).exec(result);
 				if (value && value[1]) {
