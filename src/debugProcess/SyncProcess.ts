@@ -136,11 +136,15 @@ export class SyncProcess {
 	}
 
 	/**
-	 * Writes a command to process STDIN
+	 * Writes a command directly to process STDIN.
+	 *
+	 * Important: this method does not add the command to the queue and therefore
+	 * the output will be considered on the command which is currently on the top
+	 * of the queue, if not empty.
 	 *
 	 * @param command command to be written
 	 */
-	private writeComanndToProcessInput(command: string): void {
+	public writeComanndToProcessInput(command: string): void {
 		const fullCommand = command + "\n";
 		this.externalProcess.stdin.write(fullCommand);
 	}

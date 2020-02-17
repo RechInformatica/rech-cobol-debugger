@@ -139,6 +139,14 @@ export class CobolDebugSession extends DebugSession {
 		});
 	}
 
+	protected pauseRequest(response: DebugProtocol.PauseResponse, _args: DebugProtocol.PauseArguments): void {
+		if (!this.debugRuntime || !this.running) {
+			return this.sendResponse(response);
+		}
+		this.debugRuntime.pause();
+		this.sendResponse(response);
+	}
+
 	protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
 		response.body = {
 			threads: [

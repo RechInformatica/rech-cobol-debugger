@@ -29,6 +29,11 @@ export interface DebugInterface {
 	next(): Promise<DebugPosition>;
 
 	/**
+	 * Pauses debugger execution
+	 */
+	pause(): void;
+
+	/**
 	 * Stops debugger execution
 	 */
 	stop(): Promise<void>;

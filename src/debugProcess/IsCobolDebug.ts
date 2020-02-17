@@ -50,6 +50,10 @@ export class IsCobolDebug implements DebugInterface {
 		return this.sendDebugPositionCommand("next");
 	}
 
+	pause(): void {
+		this.debugProcess.writeComanndToProcessInput("pause");
+	}
+
 	stop(): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.sendCommand("exit", [/exit\s+isdb/gi]).then(() => {
