@@ -114,7 +114,7 @@
         "signature": "57427a9a368f8f0ee4ce03c36a762e19166756b95ab688948b29be553b24a78a"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/variableparser.ts": {
-        "version": "e762133dd3dc7bda5d3aad186d0ca60af53d4830d6c4b864b5b0b7171d4639e3",
+        "version": "36a5eaadcaee2705de0237483f482857f701f3d5842e789fbe4644540350f3df",
         "signature": "f85dbb4f216e587422e29790443274882038da9da5a382a5004f68b0c5b870ce"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/displaycommandparser.ts": {
@@ -376,7 +376,6 @@
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/stepparser.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/q/index.d.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/variableparser.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/displaycommandparser.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/syncprocess.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts",
@@ -386,7 +385,8 @@
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugadapter.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/helper/configuration.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts"
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts",
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/variableparser.ts"
     ]
   },
   "version": "3.5.3"
