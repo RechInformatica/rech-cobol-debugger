@@ -155,6 +155,10 @@ export class IsCobolDebug implements DebugInterface {
 		})
 	}
 
+    sendRawCommand(command: string): void {
+		this.debugProcess.writeComanndToProcessInput(command);
+	}
+
 	/**
 	 * Creates a Regular Expression to detect isCobol debugger output, indicating that the specified word is not
 	 * a Cobol variable

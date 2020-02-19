@@ -268,17 +268,24 @@ export class CobolDebugSession extends DebugSession {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
-		if (args.context === 'watch') {
-			new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
-				response.body = {
-					result: variable.value,
-					variablesReference: 0
-				};
+		switch (args.context) {
+			case 'watch':
+				new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
+					response.body = {
+						result: variable.value,
+						variablesReference: 0
+					};
+					this.sendResponse(response);
+				}).catch(() => {
+					this.sendResponse(response);
+				});
+				break;
+			case 'repl':
+				this.debugRuntime.sendRawCommand(args.expression);
 				this.sendResponse(response);
-			}).catch(() => {
-				this.sendResponse(response);
-			});
+				break;
 		}
+
 	}
 
 

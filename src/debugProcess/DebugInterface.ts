@@ -72,4 +72,12 @@ export interface DebugInterface {
 	 */
 	removeBreakpoint(breakpoint: CobolBreakpoint): Promise<boolean>;
 
+	/**
+	 * Sends raw command to the external debugger.
+	 * This method is tipically used on Debug REPL (Read–eval–print loop) console.
+	 *
+	 * @param command command to be sent to external debugger
+	 */
+	sendRawCommand(command: string): void;
+
 }
