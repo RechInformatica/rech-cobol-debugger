@@ -97,6 +97,7 @@ export class IsCobolDebug implements DebugInterface {
 			possibleOutputResults.push(this.createNotVariableOutputRegex(variable));
 			possibleOutputResults.push(new RegExp(`Error\\:\\s+subscript\\s+required\\s+\\'${variable}\\'`, "gi"));
 			possibleOutputResults.push(/property\s+required/);
+			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/);
 			this.sendCommand(command, possibleOutputResults).then((result) => {
 				const value = VariableParser.createVariableValueRegex(variable).exec(result);
 				if (value && value[1]) {
