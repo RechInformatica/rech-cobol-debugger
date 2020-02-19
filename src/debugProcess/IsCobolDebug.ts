@@ -5,6 +5,7 @@ import { VariableParser } from "../parser/VariableParser";
 import { CobolBreakpoint } from "./DebugBreakpoint";
 import { DisplayCommandParser } from "./DisplayCommandParser";
 import { SyncProcess } from "./SyncProcess";
+import { debug } from "vscode";
 
 /** Delay in milliseconds to wait for debugger setup */
 const DELAY_WAIT_DEBUGGER_SETUP = 3000;
@@ -20,7 +21,19 @@ export class IsCobolDebug implements DebugInterface {
 	private debugProcess: SyncProcess;
 
 	constructor(commandLineToStartProcess: string) {
-		this.debugProcess = SyncProcess.spawn(commandLineToStartProcess);
+		this.debugProcess = new SyncProcess(commandLineToStartProcess)
+			.withOutputRedirector((outData: string) => this.appendOutputToDebugConsole(outData))
+			.spawn();
+	}
+
+	/**
+	 * Appends output data to debug console
+	 *
+	 * @param outData data to be appended
+	 */
+	private appendOutputToDebugConsole(outData: string): void {
+		const finalText = outData.replace(/isdb>\s+/g, "");
+		debug.activeDebugConsole.append(finalText);
 	}
 
 	/**

@@ -10,34 +10,56 @@ import { ChildProcess, exec } from "child_process";
  */
 export class SyncProcess {
 
+	/** Command which will be executed to launch external process */
+	private command: string = "";
 	/** External process */
-	private externalProcess: ChildProcess;
+	private externalProcess: ChildProcess | undefined;
 	/** Last response */
-	private lastResponse: string;
+	private lastResponse: string = "";
 	/** Command currently handled */
 	private currentCommand: Command | undefined;
 	/** Queue of pending commands to be executed on external process */
 	private commandQueue: Command[] = [];
+	/** Function which receives/redirects every process output */
+	private outputRedirector: ((output: string) => void) | undefined = undefined;
 
 	/**
-	 * Private constructor receiving an instance of the external process
-	 *
-	 * @param externalProcess external process related to this SyncProcess
-	 */
-	private constructor(externalProcess: ChildProcess) {
-		this.externalProcess = externalProcess;
-		this.lastResponse = "";
-		this.configureOutputCallbacks();
-	}
-
-	/**
-	 * Spawns the external process and returns an instance of SyncProcess
+	 * Spawns the external process and returns a new instance of SyncProcess
 	 *
 	 * @param command command to spawn the process
 	 */
 	public static spawn(command: string): SyncProcess {
-		const child = exec(command);
-		return new SyncProcess(child);
+		return new SyncProcess(command).spawn();
+	}
+
+	/**
+	 * Creates an instance of SyncProcess with the specified command line
+	 *
+	 * @param command command which will be executed to launch external process
+	 */
+	public constructor(command: string) {
+		this.command = command;
+	}
+
+	/**
+	 * Configures the function which receives/redirects every process output
+	 *
+	 * @param outputRedirector
+	 */
+	public withOutputRedirector(outputRedirector: (output: string) => void): SyncProcess {
+		this.outputRedirector = outputRedirector;
+		return this;
+	}
+
+	/**
+	 * Spawns the external process and returns the current instance of SyncProcess
+	 *
+	 * @param command command to spawn the process
+	 */
+	public spawn(): SyncProcess {
+		this.externalProcess = exec(this.command);
+		this.configureOutputCallbacks();
+		return this;
 	}
 
 	/**
@@ -57,10 +79,10 @@ export class SyncProcess {
 	 * Configure callbacks to intercept external process output
 	 */
 	private configureOutputCallbacks(): void {
-		this.externalProcess.stdout.on('data', (outdata) => {
+		this.externalProcess!.stdout.on('data', (outdata) => {
 			this.handleOutput(outdata.toString());
 		});
-		this.externalProcess.stderr.on('data', (errdata) => {
+		this.externalProcess!.stderr.on('data', (errdata) => {
 			this.handleOutput(errdata.toString());
 		});
 	}
@@ -71,10 +93,22 @@ export class SyncProcess {
 	 * @param outData current process output
 	 */
 	private handleOutput(outData: string): void {
+		this.redirectOutput(outData);
 		this.lastResponse = this.lastResponse + outData;
 		const currentCommand = this.getAvailableCommand();
 		if (currentCommand) {
 			this.handleCommand(currentCommand);
+		}
+	}
+
+    /**
+	 * Redirects the output data to the configured callback, if any.
+	 *
+	 * @param outData output data to be redirected
+	 */
+	private redirectOutput(outData: string): void {
+		if (this.outputRedirector) {
+			this.outputRedirector(outData);
 		}
 	}
 
@@ -146,7 +180,7 @@ export class SyncProcess {
 	 */
 	public writeComanndToProcessInput(command: string): void {
 		const fullCommand = command + "\n";
-		this.externalProcess.stdin.write(fullCommand);
+		this.externalProcess!.stdin.write(fullCommand);
 	}
 
 }
