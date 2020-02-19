@@ -229,7 +229,7 @@ export class IsCobolDebug implements DebugInterface {
 	 */
 	private async sendCommand(command: string, expectedRegexes: RegExp[]): Promise<string> {
 		return new Promise(async (resolve, reject) => {
-			const failRegexes: RegExp[] = [/exit\s+isdb/gi, /Debugger\sis\snot\ssuspended/gi];
+			const failRegexes: RegExp[] = [/exit\s+isdb/gi, /Debugger\sis\snot\ssuspended/gi, /Exception\s+caught\s+at\s+line/gi];
 			this.debugProcess.sendCommand({
 				command: command,
 				successRegexes: expectedRegexes,
