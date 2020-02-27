@@ -150,7 +150,7 @@ export class VariableParser {
 	 * @param variableName variable name
 	 */
 	public static createVariableValueRegex(variableName: string): RegExp {
-		return new RegExp(`${variableName.replace("-", "\\-")}\\s*=\\s*(.*)\\s?`, "gi");
+		return new RegExp(`${variableName.replace("-", "\\-")}\\s*=[ ](.*)`, "gi");
 	}
 
 }
