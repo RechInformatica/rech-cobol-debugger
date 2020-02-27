@@ -28,8 +28,6 @@ export class CobolDebugSession extends DebugSession {
 	private currentLineNumber = 0;
 	/** Name of the current file/source code */
 	private currentSourceName = "";
-	/** Object to help notifying VSCode API when extension is configured and prepared for running */
-	private configurationDone = new Subject();
 	/** Emitter of VSCode debugger API events */
 	private emitter = new EventEmitter();
 	/** Content of the last debugged line */
@@ -100,19 +98,7 @@ export class CobolDebugSession extends DebugSession {
 		this.sendEvent(new InitializedEvent());
 	}
 
-	/**
-	 * Called at the end of the configuration sequence.
-	 * Indicates that all breakpoints etc. have been sent to the DA and that the 'launch' can start.
-	 */
-	protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, _args: DebugProtocol.ConfigurationDoneArguments): void {
-		super.configurationDoneRequest(response, _args);
-		// notify the launchRequest that configuration has finished
-		this.configurationDone.notify();
-	}
-
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
-		// wait until configuration has finished (and configurationDoneRequest has been called)
-		await this.configurationDone.wait(DELAY_MS_CONFIGURATION_FINISHED);
 		const commandLine = (<any>args).commandLine;
 		this.debugRuntime = new IsCobolDebug(commandLine);
 		this.debugRuntime.setup().then(() => {
