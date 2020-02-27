@@ -57,7 +57,7 @@ export class SyncProcess {
 	 * @param command command to spawn the process
 	 */
 	public spawn(): SyncProcess {
-		this.externalProcess = exec(this.command);
+		this.externalProcess = exec(this.command, {encoding: "win1252"});
 		this.configureOutputCallbacks();
 		return this;
 	}
@@ -80,10 +80,10 @@ export class SyncProcess {
 	 */
 	private configureOutputCallbacks(): void {
 		this.externalProcess!.stdout.on('data', (outdata) => {
-			this.handleOutput(outdata.toString());
+			this.handleOutput(outdata.toString('binary'));
 		});
 		this.externalProcess!.stderr.on('data', (errdata) => {
-			this.handleOutput(errdata.toString());
+			this.handleOutput(errdata.toString('binary'));
 		});
 	}
 
