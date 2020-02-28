@@ -7,11 +7,6 @@ import { DisplayCommandParser } from "./DisplayCommandParser";
 import { SyncProcess } from "./SyncProcess";
 import { debug } from "vscode";
 
-/** Delay in milliseconds to wait for debugger setup */
-const DELAY_WAIT_DEBUGGER_SETUP = 3000;
-/** Command used to start debugger execution and check if debugger is running */
-const RUN_DEBUGGER_COMMAND = "run";
-
 /**
  * Class to interact with externam isCobol debugger, sending commands and parsing it's outputs.
  */

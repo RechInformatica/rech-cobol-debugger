@@ -14,6 +14,7 @@ import { IsCobolDebug } from './debugProcess/IsCobolDebug';
 import { VariableParser } from './parser/VariableParser';
 import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
+import { DebuggerReplManager } from './DebuggerReplManager';
 const { Subject } = require('await-notify');
 
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
@@ -260,11 +261,10 @@ export class CobolDebugSession extends DebugSession {
 				});
 				break;
 			case 'repl':
-				this.debugRuntime.sendRawCommand(args.expression);
+				new DebuggerReplManager(this.debugRuntime).handleCommand(args.expression);
 				this.sendResponse(response);
 				break;
 		}
-
 	}
 
 	private resolveCurrentVariables(response: DebugProtocol.VariablesResponse) {
@@ -272,13 +272,10 @@ export class CobolDebugSession extends DebugSession {
 			return this.sendResponse(response);
 		}
 		const parser = new VariableParser(this.debugRuntime);
-		let allVariables: DebugProtocol.Variable[] = [];
-		parser.parse(this.currentDebuggerOutput).then((variables) => {
-			allVariables = allVariables.concat(variables);
-			parser.parse(this.lastDebuggerOutput).then((variables) => {
-				allVariables = allVariables.concat(variables);
+		parser.parse(this.currentDebuggerOutput).then((currentVariables) => {
+			parser.parse(this.lastDebuggerOutput).then((lastVariables) => {
 				response.body = {
-					variables: allVariables
+					variables: currentVariables.concat(lastVariables)
 				};
 				this.sendResponse(response);
 			}).catch(() => {
