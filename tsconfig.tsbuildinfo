@@ -134,8 +134,8 @@
         "signature": "7194e47afd1e095bb1e0c17ff73ff37318692261ae95198547cf2b7b74985de1"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts": {
-        "version": "8145f3d76c087319f3e402f6f5800ce8b78c121d5ff4aab13e0af313aec825ca",
-        "signature": "6ab87c79c56a6b00fec097f2a95d601507f7b46c0706e2f6ea674ebaa29633c0"
+        "version": "1ccca1a11fb29f264fbdc3b1f6e3a04631e4fd7b07728bafbce168423401beae",
+        "signature": "093ec96f2143024e9fb83c0e07bda615fda119e2a9c74f8c882fa7f09686a569"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts": {
         "version": "214a5d91422af16a1ab7873ee1301ea170ef4a1a5ca1f24048c474db1b2a3320",
@@ -381,12 +381,12 @@
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/syncprocess.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts",
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts",
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugadapter.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/helper/configuration.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugadapter.ts"
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts"
     ]
   },
   "version": "3.5.3"

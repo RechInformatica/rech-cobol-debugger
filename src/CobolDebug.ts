@@ -16,9 +16,7 @@ import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
 const { Subject } = require('await-notify');
 
-const LAST_LINE_SCOPE_NAME = "Last line";
-const CURRENT_LINE_SCOPE_NAME = "Current line";
-const DELAY_MS_CONFIGURATION_FINISHED = 1000;
+const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
 
 export class CobolDebugSession extends DebugSession {
 
@@ -207,8 +205,7 @@ export class CobolDebugSession extends DebugSession {
 	protected scopesRequest(response: DebugProtocol.ScopesResponse, _args: DebugProtocol.ScopesArguments): void {
 		response.body = {
 			scopes: [
-				new Scope(LAST_LINE_SCOPE_NAME, this.variableHandles.create(LAST_LINE_SCOPE_NAME), true),
-				new Scope(CURRENT_LINE_SCOPE_NAME, this.variableHandles.create(CURRENT_LINE_SCOPE_NAME), true),
+				new Scope(CURRENT_VARIABLES_SCOPE_NAME, this.variableHandles.create(CURRENT_VARIABLES_SCOPE_NAME), false),
 			]
 		};
 		this.sendResponse(response);
@@ -225,12 +222,8 @@ export class CobolDebugSession extends DebugSession {
 	protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, _request?: DebugProtocol.Request) {
 		const reference = this.variableHandles.get(args.variablesReference);
 		switch (reference) {
-			case CURRENT_LINE_SCOPE_NAME: {
-				this.resolveCurrentLineVariables(response);
-				break;
-			}
-			case LAST_LINE_SCOPE_NAME: {
-				this.resolveLastLineVariables(response);
+			case CURRENT_VARIABLES_SCOPE_NAME: {
+				this.resolveCurrentVariables(response);
 				break;
 			}
 		}
@@ -274,31 +267,23 @@ export class CobolDebugSession extends DebugSession {
 
 	}
 
-
-	private resolveLastLineVariables(response: DebugProtocol.VariablesResponse) {
+	private resolveCurrentVariables(response: DebugProtocol.VariablesResponse) {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
-		new VariableParser(this.debugRuntime).parse(this.lastDebuggerOutput).then((variables) => {
-			response.body = {
-				variables: variables
-			};
-			this.sendResponse(response);
-		}).catch(() => {
-			this.sendResponse(response);
-		});
-	}
-
-	private resolveCurrentLineVariables(response: DebugProtocol.VariablesResponse) {
-		if (!this.debugRuntime) {
-			return this.sendResponse(response);
-		}
-		new VariableParser(this.debugRuntime).parse(this.currentDebuggerOutput).then((variables) => {
-			response.body = {
-				variables: variables
-			};
-			this.sendResponse(response);
-
+		const parser = new VariableParser(this.debugRuntime);
+		let allVariables: DebugProtocol.Variable[] = [];
+		parser.parse(this.currentDebuggerOutput).then((variables) => {
+			allVariables = allVariables.concat(variables);
+			parser.parse(this.lastDebuggerOutput).then((variables) => {
+				allVariables = allVariables.concat(variables);
+				response.body = {
+					variables: allVariables
+				};
+				this.sendResponse(response);
+			}).catch(() => {
+				this.sendResponse(response);
+			});
 		}).catch(() => {
 			this.sendResponse(response);
 		});
