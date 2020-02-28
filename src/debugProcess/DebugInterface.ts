@@ -36,7 +36,7 @@ export interface DebugInterface {
 	/**
 	 * Stops debugger execution
 	 */
-	stop(): Promise<void>;
+	stop(): void;
 
 	/**
 	 * Continues debugger execution from the current point

@@ -216,7 +216,7 @@ export class CobolDebugSession extends DebugSession {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
-		await this.debugRuntime.stop();
+		this.debugRuntime.stop();
 		this.fireTerminateDebugEvent(response);
 	}
 
