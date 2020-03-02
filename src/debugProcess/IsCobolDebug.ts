@@ -82,8 +82,8 @@ export class IsCobolDebug implements DebugInterface {
 			const variable = new DisplayCommandParser().parseArguments(args).variableName;
 			const possibleOutputResults: RegExp[] = [];
 			possibleOutputResults.push(VariableParser.createVariableValueRegex(variable));
-			possibleOutputResults.push(this.createVariableNotFoundRegex(variable));
-			possibleOutputResults.push(this.createNotVariableOutputRegex(variable));
+			possibleOutputResults.push(this.createVariableNotFoundRegex());
+			possibleOutputResults.push(this.createNotVariableOutputRegex());
 			possibleOutputResults.push(new RegExp(`Error\\:\\s+subscript\\s+required\\s+\\'${variable}\\'`, "gi"));
 			possibleOutputResults.push(/property\s+required/);
 			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/);
@@ -105,7 +105,7 @@ export class IsCobolDebug implements DebugInterface {
 			const command = "let " + variable + "=" + newValue;
 			const possibleOutputResults: RegExp[] = [];
 			possibleOutputResults.push(new RegExp(`new\\s+value\\s+of\\s+${variable}\\s+is\\s+`, "gi"));
-			possibleOutputResults.push(this.createNotVariableOutputRegex(variable));
+			possibleOutputResults.push(this.createNotVariableOutputRegex());
 			possibleOutputResults.push(new RegExp(`data-item\\s+not\\s+found\\s+\\'${variable}\\'`, "gi"));
 			this.sendCommand(command, possibleOutputResults).then(() => {
 				return resolve();
@@ -152,11 +152,9 @@ export class IsCobolDebug implements DebugInterface {
 	/**
 	 * Creates a Regular Expression to detect isCobol debugger output, indicating that the specified word is not
 	 * a Cobol variable
-	 *
-	 * @param variable variable to consider in Regular Expression
 	 */
-	private createNotVariableOutputRegex(variable: string): RegExp {
-		return new RegExp(`not\\s+a\\s+Cobol\\s+variable\\s+\\'${variable}\\'`, "gi");
+	private createNotVariableOutputRegex(): RegExp {
+		return new RegExp(`not\\s+a\\s+Cobol\\s+variable\\s+`, "gi");
 	}
 
 	private buildRemoveBreakpointCommand(breakpoint: CobolBreakpoint) {
@@ -203,11 +201,9 @@ export class IsCobolDebug implements DebugInterface {
 
 	/**
 	 * Creates a regular expression to parse debugger output and check if variable exists or not
-	 *
-	 * @param variable variable name
 	 */
-	private createVariableNotFoundRegex(variable: string): RegExp {
-		const regexText = `data-item\\s+not\\s+found\\s+\\'${variable}\\'`;
+	private createVariableNotFoundRegex(): RegExp {
+		const regexText = `data-item\\s+not\\s+found\\s+`;
 		return new RegExp(regexText, "gi");
 	}
 

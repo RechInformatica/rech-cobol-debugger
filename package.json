@@ -5,7 +5,7 @@
 	"version": "0.0.1",
 	"publisher": "rechinformatica",
 	"engines": {
-		"vscode": "^1.35.0"
+		"vscode": "^1.43.0"
 	},
 	"icon": "images/debugger-logo.png",
 	"license": "SEE LICENSE IN LICENSE.txt",

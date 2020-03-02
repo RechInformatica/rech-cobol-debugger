@@ -46,8 +46,8 @@
         "signature": "3e0a459888f32b42138d5a39f706ff2d55d500ab1031e0988b5568b0f67c2303"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode/vscode.d.ts": {
-        "version": "cd3d92cbbfd4295eeb9eea106ed367288bd23b772057335c9117cfa51ca24fd7",
-        "signature": "cd3d92cbbfd4295eeb9eea106ed367288bd23b772057335c9117cfa51ca24fd7"
+        "version": "b5e24ee638e68b0d54433b72d79161e837441d7d3cef1e3b19b450c94bdc00fe",
+        "signature": "b5e24ee638e68b0d54433b72d79161e837441d7d3cef1e3b19b450c94bdc00fe"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/cobolconfigurationprovider.ts": {
         "version": "89613ff1aa7c99842564ff213b5c0055ed2da21d52b8ca0251abca57e5f84d51",
@@ -126,8 +126,8 @@
         "signature": "83621a8af45250efef9fa913441a3bbec52091a2523788f947b729f43ebfb0e3"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts": {
-        "version": "ef8c6b0cd51766def009752a33c3cc1ddb4520bc0156c4ccdddf730b85117b7a",
-        "signature": "ac1ce9c966c6da677d4773470093a611f6ff452ba66049c4335f7c164cad02a7"
+        "version": "e8ec55fb258194bca355d6c87c3cc6fca76a91a66db0e53163ad918ceb44de15",
+        "signature": "dac3413a3e5501ad4040cd03e0cd52aa9e276772e3c4d31d86074683fbf91657"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts": {
         "version": "c6d4a80f7d3464d5d4090638cc2f810ef378d366a32bb8e4c2ff639a6e0e28e6",
@@ -138,7 +138,7 @@
         "signature": "dc6a9d7651dd92b8a67c016cbd73832a2d9992399d5ecb6f84944988aa696669"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts": {
-        "version": "877482b22a8bfa3d853d1d8784efa6cbe822059b0feb23f54332c44a995ee207",
+        "version": "af8eee2240589ccee8e864bb8bba60cd97ee1fcf0cc26fa23a7be9132dee4e18",
         "signature": "093ec96f2143024e9fb83c0e07bda615fda119e2a9c74f8c882fa7f09686a569"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts": {
@@ -154,7 +154,7 @@
         "signature": "c1783f1e58b52ec64d065c98587fae6e312e3a29140cafc92f506853cc4ef52d"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts": {
-        "version": "ed524851df3ca8ae35dd4a1dfeed40a2345eabc3771e476b946c3ebb6722ea2d",
+        "version": "104daefe96fe657357e3088bf40b326c308439a091e5337634bc2d5dbfa473d9",
         "signature": "81de8770224fa6a42ad3b636d2aefe306c995e09ba8e5c1bdf3a1eb3b2f9f59d"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts": {
@@ -290,19 +290,46 @@
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/cobolconfigurationprovider.ts": [
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode/vscode.d.ts"
       ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode/vscode.d.ts"
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/inspector.d.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts"
       ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/main.d.ts"
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/inspector.d.ts"
       ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode/vscode.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts",
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/protocol.d.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts",
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/messages.d.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/debugsession.d.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/protocol.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/messages.d.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/loggingdebugsession.d.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/debugsession.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/logger.d.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/debugsession.d.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/main.d.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/debugsession.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/loggingdebugsession.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/logger.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/messages.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/handles.d.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debugposition.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debugbreakpoint.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/stepparser.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debugposition.ts"
       ],
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/variableparser.ts": [
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts",
@@ -313,49 +340,22 @@
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debugbreakpoint.ts",
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts"
       ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/loggingdebugsession.d.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/debugsession.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/main.d.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/debugsession.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/loggingdebugsession.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/logger.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/messages.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/handles.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/debugsession.d.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/protocol.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/messages.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/logger.d.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/debugsession.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/messages.d.ts": [
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts",
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/protocol.d.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/inspector.d.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/index.d.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/node/inspector.d.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/stepparser.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debugposition.ts"
-      ],
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts": [
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debugposition.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debugbreakpoint.ts"
       ],
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debuggerreplmanager.ts": [
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debuginterface.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugprotocol/lib/debugprotocol.d.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode-debugadapter/lib/main.d.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode/vscode.d.ts"
+      ],
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts": [
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode/vscode.d.ts"
       ]
     },
     "semanticDiagnosticsPerFile": [
@@ -390,7 +390,6 @@
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/variableparser.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/displaycommandparser.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/syncprocess.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debuggerreplmanager.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts",
@@ -398,7 +397,8 @@
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugadapter.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/helper/configuration.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts"
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts",
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts"
     ]
   },
   "version": "3.5.3"

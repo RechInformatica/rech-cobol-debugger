@@ -1,6 +1,6 @@
 'use strict';
 
-import { ExtensionContext, commands, window, debug, DebugAdapterDescriptorFactory } from 'vscode';
+import { ExtensionContext, commands, window, debug, DebugAdapterDescriptorFactory, languages, TextDocument, Position, ProviderResult, EvaluatableExpression } from 'vscode';
 import { CobolConfigurationProvider } from './CobolConfigurationProvider';
 import { CobolDebugAdapterDescriptorFactory } from './CobolDebugAdapterDescriptorFactory';
 import { Configuration } from './helper/Configuration';
@@ -37,6 +37,15 @@ export function activate(context: ExtensionContext) {
 	if ('dispose' in factory) {
 		context.subscriptions.push(factory);
 	}
+
+	// override VS Code's default implementation of the debug hover
+	languages.registerEvaluatableExpressionProvider('COBOL', {
+		provideEvaluatableExpression(document: TextDocument, position: Position): ProviderResult<EvaluatableExpression> {
+			const wordRange = document.getWordRangeAtPosition(position)
+			return wordRange ? new EvaluatableExpression(wordRange) : undefined;
+		}
+	});
+
 }
 
 function askParameter(question: string): Thenable<string | undefined> {

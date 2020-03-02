@@ -90,6 +90,7 @@ export class CobolDebugSession extends DebugSession {
 		response.body = response.body || {};
 		response.body.supportsTerminateRequest = true;
 		response.body.supportsSetVariable = true;
+		response.body.supportsEvaluateForHovers = true;
 		this.sendResponse(response);
 		// since this debug adapter can accept configuration requests like 'setBreakpoint' at any time,
 		// we request them early by sending an 'initializeRequest' to the frontend.
@@ -249,6 +250,7 @@ export class CobolDebugSession extends DebugSession {
 			return this.sendResponse(response);
 		}
 		switch (args.context) {
+			case 'hover':
 			case 'watch':
 				new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
 					response.body = {
