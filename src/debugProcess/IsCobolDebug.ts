@@ -118,7 +118,10 @@ export class IsCobolDebug implements DebugInterface {
 	addBreakpoint(breakpoint: CobolBreakpoint): Promise<boolean> {
 		return new Promise(async (resolve, reject) => {
 			const command = this.buildAddBreakpointCommand(breakpoint);
-			const expectedRegexes = [this.createBreakpointNoVerbRegex(breakpoint), this.createSetedBreakpointRegex(breakpoint)];
+			let expectedRegexes: RegExp[] = [];
+			expectedRegexes.push(this.createBreakpointNoVerbRegex(breakpoint));
+			expectedRegexes.push(this.createSetedBreakpointRegex(breakpoint));
+			expectedRegexes.push(/no\s+such\s+file/);
 			this.sendCommand(command, expectedRegexes).then((result) => {
 				if (this.createBreakpointNoVerbRegex(breakpoint).test(result)) {
 					return resolve(false);
