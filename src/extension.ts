@@ -4,7 +4,8 @@ import { ExtensionContext, commands, window, debug, DebugAdapterDescriptorFactor
 import { CobolConfigurationProvider } from './CobolConfigurationProvider';
 import { CobolDebugAdapterDescriptorFactory } from './CobolDebugAdapterDescriptorFactory';
 import { Configuration } from './helper/Configuration';
-import Q from 'q';
+
+const DEFAULT_SELECTIONS: Map<string, string> = new Map<string, string>();
 
 export function activate(context: ExtensionContext) {
 
@@ -16,8 +17,10 @@ export function activate(context: ExtensionContext) {
 			let commandLine = configuration.get<string>("commandline");
 			for (let i = 0; i < questions.length; i++) {
 				const question = questions[i];
-				const response = await askParameter(question);
+				const defaultValue = DEFAULT_SELECTIONS.get(question);
+				const response = await askParameter(question, defaultValue);
 				if (response) {
+					DEFAULT_SELECTIONS.set(question, response);
 					const token = `$${i + 1}`;
 					commandLine = commandLine.replace(token, response!);
 				}
@@ -48,9 +51,9 @@ export function activate(context: ExtensionContext) {
 
 }
 
-function askParameter(question: string): Thenable<string | undefined> {
+function askParameter(question: string, defaultValue: string | undefined): Thenable<string | undefined> {
 	return new Promise((resolve, reject) => {
-		window.showInputBox({placeHolder: question, ignoreFocusOut: true}).then((response) => {
+		window.showInputBox({value: defaultValue, prompt: question, ignoreFocusOut: true}).then((response) => {
 			resolve(response);
 		}, (e) => reject(e));
 	});
