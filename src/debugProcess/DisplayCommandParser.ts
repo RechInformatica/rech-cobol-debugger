@@ -1,20 +1,20 @@
 
-/** isCobol parameter to retrieve variable value in hexadecimal */
+/** External debugger parameter to retrieve variable value in hexadecimal */
 const HEX_DISPLAY_PARAMETER = "-x";
-/** isCobol parameter to retrieve variable value with child in tree list */
+/** External debugger parameter to retrieve variable value with child in tree list */
 const TREE_DISPLAY_PARAMETER = "-tree";
 
 /**
- * Parser of isCobol display commands
+ * Parser of external debugger display commands
  */
 export class DisplayCommandParser {
 
 	/**
-	 * Parses the command-line arguments returning an isCobolDisplayArguments instance
+	 * Parses the command-line arguments returning an external debuggerDisplayArguments instance
 	 *
-	 * @param displayArguments isCobol display arguments to be parsed
+	 * @param displayArguments external debugger display arguments to be parsed
 	 */
-	public parseArguments(displayArguments: string): isCobolDisplayArguments {
+	public parseArguments(displayArguments: string): DebuggerDisplayArguments {
 		const extraArguments: string[] = [];
 		if (displayArguments.includes(HEX_DISPLAY_PARAMETER + " ")) {
 			extraArguments.push(HEX_DISPLAY_PARAMETER);
@@ -46,9 +46,9 @@ export class DisplayCommandParser {
 }
 
 /**
- * isCobol 'display' command parameters
+ * External debugger 'display' command parameters
  */
-export interface isCobolDisplayArguments {
+export interface DebuggerDisplayArguments {
 	/** Command-line extra arguments to change default COBOl 'display' behavior */
 	extraArguments: string[]
 	/** Variable name to retrieve the value */

@@ -6,7 +6,7 @@ const MATCH_LINE_INDEX = 1;
 const MATCH_FILE_INDEX = 2;
 
 /**
- * Class to parse Step output from isCobol command-line debugger process
+ * Class to parse Step output from COBOL command-line debugger process
  */
 export class StepParser {
 

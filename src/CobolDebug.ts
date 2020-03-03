@@ -10,7 +10,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { basename } from 'path';
 import { EventEmitter } from 'events';
 import { DebugInterface } from './debugProcess/DebugInterface';
-import { IsCobolDebug } from './debugProcess/IsCobolDebug';
+import { ExternalDebugAdapter } from './debugProcess/ExternalDebugAdapter';
 import { VariableParser } from './parser/VariableParser';
 import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
@@ -101,7 +101,7 @@ export class CobolDebugSession extends DebugSession {
 
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
 		const commandLine = (<any>args).commandLine;
-		this.debugRuntime = new IsCobolDebug(commandLine);
+		this.debugRuntime = new ExternalDebugAdapter(commandLine);
 		this.debugRuntime.setup().then(() => {
 			this.debugRuntime!.start().then((position) => {
 				this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
@@ -114,12 +114,12 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	/**
-	 * Method fired when an unexpected problem happened while starting external isCOBOL debugger
+	 * Method fired when an unexpected problem happened while starting external COBOL debugger
 	 *
 	 * @param response response information
 	 */
 	private onProblemStartingDebugger(response: DebugProtocol.LaunchResponse): void {
-		window.showWarningMessage("Could not start external isCOBOL debugger.");
+		window.showWarningMessage("Could not start external COBOL debugger.");
 		this.fireTerminateDebugEvent(response);
 	}
 

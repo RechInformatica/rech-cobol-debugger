@@ -8,11 +8,11 @@ import { SyncProcess } from "./SyncProcess";
 import { debug } from "vscode";
 
 /**
- * Class to interact with externam isCobol debugger, sending commands and parsing it's outputs.
+ * Class to interact with external debugger, sending commands and parsing it's outputs.
  */
-export class IsCobolDebug implements DebugInterface {
+export class ExternalDebugAdapter implements DebugInterface {
 
-	/** External isCobol debugger process */
+	/** External COBOL debugger process */
 	private debugProcess: SyncProcess;
 
 	constructor(commandLineToStartProcess: string) {
@@ -32,7 +32,7 @@ export class IsCobolDebug implements DebugInterface {
 	}
 
 	/**
-	 * Setups isCobol external debugger
+	 * Setups COBOL external debugger
 	 */
 	public setup(): Promise<DebugPosition> {
 		return this.sendDebugPositionCommand("");
@@ -67,14 +67,14 @@ export class IsCobolDebug implements DebugInterface {
 	}
 
 	/**
-	 * Captures variable information considering extra isCobol parameters.
+	 * Captures variable information considering extra COBOL parameters.
 	 * Some of these parameteres are to retrieve value in hexadecimal format or show variable children.
 	 *
 	 * For example:
 	 *       '-x <my-var>' -> shows hexadecimal value
 	 *    '-tree <my-var>' -> shows variable with children
 	 *
-	 * @param args variable with optional isCobol 'display' parameters
+	 * @param args variable with optional COBOL 'display' parameters
 	 */
 	requestVariableValue(args: string): Promise<string> {
 		return new Promise(async (resolve, reject) => {
@@ -153,7 +153,7 @@ export class IsCobolDebug implements DebugInterface {
 	}
 
 	/**
-	 * Creates a Regular Expression to detect isCobol debugger output, indicating that the specified word is not
+	 * Creates a Regular Expression to detect COBOL debugger output, indicating that the specified word is not
 	 * a Cobol variable
 	 */
 	private createNotVariableOutputRegex(): RegExp {
@@ -191,10 +191,10 @@ export class IsCobolDebug implements DebugInterface {
 	}
 
     /**
-	 * Builds the command to display variable value from isCobol debugger
+	 * Builds the command to display variable value from COBOL debugger
 	 *
 	 * @param variable variable name
-	 * @param extraArguments extra arguments to isCobol externam debugger
+	 * @param extraArguments extra arguments to COBOL externam debugger
 	 */
 	private buildDisplayCommand(variable: string, extraArguments?: string): string {
 		extraArguments = extraArguments ? extraArguments : "";
@@ -228,7 +228,7 @@ export class IsCobolDebug implements DebugInterface {
 	}
 
 	/**
-	 * Sends command to isCobol external debugger expecting for an output that matches with the specified regular expressions
+	 * Sends command to COBOL external debugger expecting for an output that matches with the specified regular expressions
 	 *
 	 * @param command command to be fired
 	 * @param expectedRegexes regular expressions to match debugger output

@@ -1,2 +1,2 @@
-# rech-iscobol-debugger
-Debug isCOBOL files with VSCode.
+# rech-cobol-debugger
+Debug COBOL files with Visual Studio Code

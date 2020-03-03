@@ -9,7 +9,7 @@ const DEFAULT_SELECTIONS: Map<string, string> = new Map<string, string>();
 
 export function activate(context: ExtensionContext) {
 
-	const configuration = new Configuration("rech.iscobol.debug")
+	const configuration = new Configuration("rech.cobol.debug")
 
 	context.subscriptions.push(commands.registerCommand('extension.cobol-debug.startDebugger', _config => {
 		return new Promise<string>(async (resolve) => {

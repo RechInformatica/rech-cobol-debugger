@@ -1,7 +1,7 @@
 {
 	"name": "rech-iscobol-debugger",
-	"displayName": "Rech isCOBOL Debugger",
-	"description": "Debug isCOBOL files with VSCode.",
+	"displayName": "Rech COBOL Debugger",
+	"description": "Debug COBOL files with Visual Studio Code",
 	"version": "0.0.1",
 	"publisher": "rechinformatica",
 	"engines": {
@@ -10,7 +10,7 @@
 	"icon": "images/debugger-logo.png",
 	"license": "SEE LICENSE IN LICENSE.txt",
 	"keywords": [
-		"rech iscobol debugger cobol"
+		"rech cobol debugger cobol"
 	],
 	"categories": [
 		"Debuggers"
@@ -24,7 +24,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"package": "vsce package --out F:/DIV/VSCode/extension/market/rech-iscobol-debugger/rech-iscobol-debugger.vsix",
+		"package": "vsce package --out F:/DIV/VSCode/extension/market/rech-cobol-debugger/rech-cobol-debugger.vsix",
 		"compile": "npm run tslint && tsc -p ./",
 		"postinstall": "node ./node_modules/vscode/bin/install",
 		"test": "npm run compile && mocha -r ts-node/register ./src/test/**/*.test.ts",
@@ -79,9 +79,9 @@
 		],
 		"configuration": {
 			"type": "object",
-			"title": "Rech isCOBOL debug configurations",
+			"title": "Rech COBOL debug configurations",
 			"properties": {
-				"rech.iscobol.debug.params": {
+				"rech.cobol.debug.params": {
 					"type": "array",
 					"items": {
 						"type": "string",
@@ -98,7 +98,7 @@
 					],
 					"description": "Parameters that will be accepted before running the debugger"
 				},
-				"rech.iscobol.debug.commandline": {
+				"rech.cobol.debug.commandline": {
 					"type": "string",
 					"default": "isdbg $1",
 					"title": "Command Line",
@@ -109,7 +109,7 @@
 		"debuggers": [
 			{
 				"type": "COBOL",
-				"label": "isCOBOL debug",
+				"label": "COBOL debug",
 				"program": "./out/debugAdapter.js",
 				"runtime": "node",
 				"configurationAttributes": {
@@ -140,7 +140,7 @@
 					{
 						"type": "COBOL",
 						"request": "launch",
-						"name": "isCOBOL Debugger",
+						"name": "COBOL Debugger",
 						"commandLine": "${command:commandLineBuild}",
 						"stopOnEntry": true
 					}
@@ -152,7 +152,7 @@
 						"body": {
 							"type": "COBOL",
 							"request": "launch",
-							"name": "isCOBOL Debugger",
+							"name": "COBOL Debugger",
 							"commandLine": "^\"\\${command:commandLineBuild}\"",
 							"stopOnEntry": true
 						}
