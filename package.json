@@ -1,5 +1,5 @@
 {
-	"name": "rech-iscobol-debugger",
+	"name": "rech-cobol-debugger",
 	"displayName": "Rech COBOL Debugger",
 	"description": "Debug COBOL files with Visual Studio Code",
 	"version": "0.0.1",
@@ -17,10 +17,10 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/RechInformatica/rech-iscobol-debugger.git"
+		"url": "https://github.com/RechInformatica/rech-cobol-debugger.git"
 	},
 	"bugs": {
-		"url": "https://github.com/RechInformatica/rech-iscobol-debugger/issues"
+		"url": "https://github.com/RechInformatica/rech-cobol-debugger/issues"
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
