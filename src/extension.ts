@@ -19,13 +19,15 @@ export function activate(context: ExtensionContext) {
 				const question = questions[i];
 				const defaultValue = DEFAULT_SELECTIONS.get(question);
 				const response = await askParameter(question, defaultValue);
+				const token = `$${i + 1}`;
 				if (response) {
 					DEFAULT_SELECTIONS.set(question, response);
-					const token = `$${i + 1}`;
-					commandLine = commandLine.replace(token, response!);
+					commandLine = commandLine.replace(token, response);
+				} else {
+					commandLine = commandLine.replace(token, "");
 				}
-
 			}
+			commandLine = commandLine.trim();
 			return resolve(commandLine);
 		});
 	}));

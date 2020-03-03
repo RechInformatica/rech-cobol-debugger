@@ -15,6 +15,7 @@ import { VariableParser } from './parser/VariableParser';
 import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
 import { DebuggerReplManager } from './DebuggerReplManager';
+import { window } from 'vscode';
 const { Subject } = require('await-notify');
 
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
@@ -105,9 +106,21 @@ export class CobolDebugSession extends DebugSession {
 			this.debugRuntime!.start().then((position) => {
 				this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
 			}).catch(() => {
-				this.fireTerminateDebugEvent(response);
+				this.onProblemStartingDebugger(response);
 			});
-		}).catch();
+		}).catch(() => {
+			this.onProblemStartingDebugger(response);
+		});
+	}
+
+	/**
+	 * Method fired when an unexpected problem happened while starting external isCOBOL debugger
+	 *
+	 * @param response response information
+	 */
+	private onProblemStartingDebugger(response: DebugProtocol.LaunchResponse): void {
+		window.showWarningMessage("Could not start external isCOBOL debugger.");
+		this.fireTerminateDebugEvent(response);
 	}
 
 	protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {

@@ -126,7 +126,7 @@
         "signature": "83621a8af45250efef9fa913441a3bbec52091a2523788f947b729f43ebfb0e3"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts": {
-        "version": "29e616cf2c3a9dec08537321d151f1d09dd695b350402b5121b3afa477720df1",
+        "version": "34cb9af9bc69b44d5663ef31d5e4a2a7795a69ab19ef8a2221577b5eab5e88f3",
         "signature": "dac3413a3e5501ad4040cd03e0cd52aa9e276772e3c4d31d86074683fbf91657"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts": {
@@ -138,8 +138,8 @@
         "signature": "dc6a9d7651dd92b8a67c016cbd73832a2d9992399d5ecb6f84944988aa696669"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts": {
-        "version": "af8eee2240589ccee8e864bb8bba60cd97ee1fcf0cc26fa23a7be9132dee4e18",
-        "signature": "093ec96f2143024e9fb83c0e07bda615fda119e2a9c74f8c882fa7f09686a569"
+        "version": "2370282b3f5c8cca29f79b357d8733a7bf4d514c0f8a9a2fcd61a996ee115d2c",
+        "signature": "8d72b705fcb2aa6f390610ac6c737ee379d108e4d71fc3091f9e3f7d11f0dbdc"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts": {
         "version": "214a5d91422af16a1ab7873ee1301ea170ef4a1a5ca1f24048c474db1b2a3320",
@@ -154,7 +154,7 @@
         "signature": "c1783f1e58b52ec64d065c98587fae6e312e3a29140cafc92f506853cc4ef52d"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts": {
-        "version": "e4e1ae67916a89f3bd14d2820fe11e9b52b0d2001af801bd16bdffe211e6a4d8",
+        "version": "b0d2c62a4e87e34d0f29194157f85d2099be3634e645370d14a27932d0a4b3a1",
         "signature": "81de8770224fa6a42ad3b636d2aefe306c995e09ba8e5c1bdf3a1eb3b2f9f59d"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts": {
@@ -265,7 +265,8 @@
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/parser/variableparser.ts",
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/debugposition.ts",
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts",
-        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debuggerreplmanager.ts"
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debuggerreplmanager.ts",
+        "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode/vscode.d.ts"
       ],
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts": [
         "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/vscode/vscode.d.ts",
@@ -392,12 +393,12 @@
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugprocess/iscoboldebug.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/breakpoint/breakpointmanager.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debuggerreplmanager.ts",
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/helper/configuration.ts",
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts",
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebug.ts",
       "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/coboldebugadapterdescriptorfactory.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugadapter.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/helper/configuration.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/node_modules/@types/mocha/index.d.ts",
-      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/extension.ts"
+      "c:/users/cassel/.vscode-insiders/extensions/rech-iscobol-debugger/src/debugadapter.ts"
     ]
   },
   "version": "3.5.3"
