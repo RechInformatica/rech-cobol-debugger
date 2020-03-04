@@ -2,9 +2,11 @@
 
 This extension allows debugging COBOL files through VSCode along with an external command-line debugging process, mapping UI actions to commands on the external process.
 
+The output of each command is captured from debugging process and shown on VSCode UI in many ways, like in Variable Watch or Hover.
+
 !['Debugger usage' Debugger usage](images/rech-cobol-debugger-usage.gif)
 
-The output of each command is captured from debugging process and shown on VSCode UI in many ways, like in Variable Watch or Hover.
+The overall architecture is shown below:
 
 !['Extension architecture' Extension architecture](images/rech-cobol-debugger-diagram.png)
 
