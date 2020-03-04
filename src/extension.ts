@@ -18,14 +18,13 @@ export function activate(context: ExtensionContext) {
 			for (let i = 0; i < questions.length; i++) {
 				const question = questions[i];
 				const defaultValue = DEFAULT_SELECTIONS.get(question);
-				const response = await askParameter(question, defaultValue);
 				const token = `$${i + 1}`;
-				if (response) {
-					DEFAULT_SELECTIONS.set(question, response);
-					commandLine = commandLine.replace(token, response);
-				} else {
-					commandLine = commandLine.replace(token, "");
+				let response = await askParameter(question, defaultValue);
+				if (!response) {
+					response = "";
 				}
+				DEFAULT_SELECTIONS.set(question, response);
+				commandLine = commandLine.replace(token, response);
 			}
 			commandLine = commandLine.trim();
 			return resolve(commandLine);
