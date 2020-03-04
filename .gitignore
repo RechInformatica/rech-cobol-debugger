@@ -5,3 +5,5 @@ npm-debug.log
 isCOBOL-debug-log.txt
 *.vsix
 **/PsPadBk/*
+tsconfig.tsbuildinfo
+package-lock.json

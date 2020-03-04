@@ -2,6 +2,13 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"type": "COBOL",
+			"request": "launch",
+			"name": "COBOL Debugger",
+			"commandLine": "${command:commandLineBuild}",
+			"stopOnEntry": true
+		},
+		{
 			"name": "Extension",
 			"type": "extensionHost",
 			"request": "launch",

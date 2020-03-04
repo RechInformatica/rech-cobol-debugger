@@ -80,6 +80,9 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return new Promise(async (resolve, reject) => {
 			const command = `display ${args}`;
 			const variable = new DisplayCommandParser().parseArguments(args).variableName;
+			if (this.isInvalidVariableName(variable)) {
+				return reject("Invalid variable name");
+			}
 			const possibleOutputResults: RegExp[] = [];
 			possibleOutputResults.push(VariableParser.createVariableValueRegex(variable));
 			possibleOutputResults.push(this.createVariableNotFoundRegex());
@@ -99,6 +102,10 @@ export class ExternalDebugAdapter implements DebugInterface {
 			});
 		});
 	}
+
+	private isInvalidVariableName(variable: string): boolean {
+		return variable.trim().split(" ").length > 1;
+}
 
 	changeVariableValue(variable: string, newValue: string): Promise<void> {
 		return new Promise((resolve, reject) => {

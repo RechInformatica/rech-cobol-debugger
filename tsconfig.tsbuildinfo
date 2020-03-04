@@ -126,8 +126,8 @@
         "signature": "83621a8af45250efef9fa913441a3bbec52091a2523788f947b729f43ebfb0e3"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-cobol-debugger/src/debugprocess/externaldebugadapter.ts": {
-        "version": "9c2b75129271f4c52390f729e930438a8536dcff6f4b2336c9cf862b457a7737",
-        "signature": "e1a3122ba661fe50f7c99e98b81409ad535a7a03324dae3f7a54e0257270d85b"
+        "version": "f580eefe588006f902c01853f96e0765028bfad02a9ac6c7eb510bd354455bfb",
+        "signature": "b492841bcbdd44daf7c01df9c16e1c918bff5021d02ca9b172cae914c38bd790"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-cobol-debugger/src/breakpoint/breakpointmanager.ts": {
         "version": "c6d4a80f7d3464d5d4090638cc2f810ef378d366a32bb8e4c2ff639a6e0e28e6",
@@ -138,8 +138,8 @@
         "signature": "dc6a9d7651dd92b8a67c016cbd73832a2d9992399d5ecb6f84944988aa696669"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-cobol-debugger/src/coboldebug.ts": {
-        "version": "66b95aa73114b166c4cca48d65b5209351617713621025b30aed90b315eb4e4b",
-        "signature": "7afb9369de360c49752f20a7aa63fd359b97bbbfcc8a07755f413dfff3774221"
+        "version": "df00205705d1eb153fc05fe421cc2ed0c7de35ac2975ec4638022b261bbba05c",
+        "signature": "fc4b08feff0272d9927649f290480840e19819f0ba69821935934e5e04b14985"
       },
       "c:/users/cassel/.vscode-insiders/extensions/rech-cobol-debugger/src/coboldebugadapterdescriptorfactory.ts": {
         "version": "214a5d91422af16a1ab7873ee1301ea170ef4a1a5ca1f24048c474db1b2a3320",

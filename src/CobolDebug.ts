@@ -4,7 +4,7 @@
 
 import {
 	InitializedEvent, TerminatedEvent, StoppedEvent, OutputEvent,
-	Source, DebugSession, Thread, Scope, Handles, ContinuedEvent
+	Source, DebugSession, Thread, Scope, Handles, ContinuedEvent, Variable
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { basename } from 'path';
@@ -264,14 +264,23 @@ export class CobolDebugSession extends DebugSession {
 		}
 		switch (args.context) {
 			case 'hover':
+				new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
+					this.sendVariableValueResponse(variable, response);
+				}).catch(() => {
+					// On hover does not set result when value is not found so hint is not shown in UI
+					this.sendResponse(response);
+				});
+				break;
 			case 'watch':
 				new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
+					this.sendVariableValueResponse(variable, response);
+				}).catch(() => {
+					// This is needed because otherwise VSCode would show the last successful watch result, which might be
+					// outdated
 					response.body = {
-						result: variable.value,
+						result: "<Invalid watch expression>",
 						variablesReference: 0
 					};
-					this.sendResponse(response);
-				}).catch(() => {
 					this.sendResponse(response);
 				});
 				break;
@@ -280,6 +289,14 @@ export class CobolDebugSession extends DebugSession {
 				this.sendResponse(response);
 				break;
 		}
+	}
+
+	private sendVariableValueResponse(variable: DebugProtocol.Variable, response: DebugProtocol.EvaluateResponse): void {
+		response.body = {
+			result: variable.value,
+			variablesReference: 0
+		};
+		this.sendResponse(response);
 	}
 
 	private resolveCurrentVariables(response: DebugProtocol.VariablesResponse) {
