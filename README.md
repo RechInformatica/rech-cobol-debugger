@@ -1,8 +1,8 @@
 # Debug COBOL files with Visual Studio Code
 
-!['Debugger usage' Debugger usage](images/rech-cobol-debugger-usage.gif)
-
 This extension allows debugging COBOL files through VSCode along with an external command-line debugging process, mapping UI actions to commands on the external process.
+
+!['Debugger usage' Debugger usage](images/rech-cobol-debugger-usage.gif)
 
 The output of each command is captured from debugging process and shown on VSCode UI in many ways, like in Variable Watch or Hover.
 
@@ -14,6 +14,7 @@ It is suggested to use isCOBOL™ command-line debugger _isdbg_ since the comman
 
 You need to configure the location/command-line to start the external debugger, as follows:
 
+!['Input UI' Input UI](images/program-name-input.png)
 
     "rech.cobol.debug.commandline": "C:\\debugger\\isdbg.exe $1",
 
@@ -25,6 +26,4 @@ You can ask user for specific questions before external debugger is started. Eac
         "Sample question for second parameter",
     ]
 
-!['Input UI' Input UI](images/program-name-input.png)
-
-You can specify many questions as needed.
+You can specify as many questions as needed.
