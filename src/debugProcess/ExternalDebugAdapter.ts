@@ -3,7 +3,6 @@ import { DebugPosition } from "./DebugPosition";
 import { StepParser } from "../parser/StepParser";
 import { VariableParser } from "../parser/VariableParser";
 import { CobolBreakpoint } from "./DebugBreakpoint";
-import { DisplayCommandParser } from "./DisplayCommandParser";
 import { SyncProcess } from "./SyncProcess";
 import { debug } from "vscode";
 
@@ -79,19 +78,15 @@ export class ExternalDebugAdapter implements DebugInterface {
 	requestVariableValue(args: string): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			const command = `display ${args}`;
-			const variable = new DisplayCommandParser().parseArguments(args).variableName;
-			if (this.isInvalidVariableName(variable)) {
-				return reject("Invalid variable name");
-			}
 			const possibleOutputResults: RegExp[] = [];
-			possibleOutputResults.push(VariableParser.createVariableValueRegex(variable));
+			possibleOutputResults.push(VariableParser.createVariableValueRegex());
 			possibleOutputResults.push(this.createVariableNotFoundRegex());
 			possibleOutputResults.push(this.createNotVariableOutputRegex());
-			possibleOutputResults.push(new RegExp(`Error\\:\\s+subscript\\s+required\\s+\\'${variable}\\'`, "gi"));
+			possibleOutputResults.push(new RegExp(`Error\\:\\s+subscript\\s+required\\s+`, "gi"));
 			possibleOutputResults.push(/property\s+required/);
 			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/);
 			this.sendCommand(command, possibleOutputResults).then((result) => {
-				const value = VariableParser.createVariableValueRegex(variable).exec(result);
+				const value = VariableParser.createVariableValueRegex().exec(result);
 				if (value && value[1]) {
 					return resolve(value[1])
 				} else {
@@ -102,10 +97,6 @@ export class ExternalDebugAdapter implements DebugInterface {
 			});
 		});
 	}
-
-	private isInvalidVariableName(variable: string): boolean {
-		return variable.trim().split(" ").length > 1;
-}
 
 	changeVariableValue(variable: string, newValue: string): Promise<void> {
 		return new Promise((resolve, reject) => {

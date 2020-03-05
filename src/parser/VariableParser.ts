@@ -146,11 +146,9 @@ export class VariableParser {
 
 	/**
 	 * Creates a RegEx to parse variable output from external debugger output
-	 *
-	 * @param variableName variable name
 	 */
-	public static createVariableValueRegex(variableName: string): RegExp {
-		return new RegExp(`${variableName.replace("-", "\\-")}\\s*=[ ](.*)`, "gi");
+	public static createVariableValueRegex(): RegExp {
+		return /[\w\(\)\: ]+\s*=[ ](.*)/gi;
 	}
 
 }
