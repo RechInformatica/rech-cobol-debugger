@@ -117,11 +117,11 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return new Promise(async (resolve, reject) => {
 			const command = this.buildAddBreakpointCommand(breakpoint);
 			const expectedRegexes: RegExp[] = [];
-			expectedRegexes.push(this.createBreakpointNoVerbRegex(breakpoint));
-			expectedRegexes.push(this.createSetedBreakpointRegex(breakpoint));
+			expectedRegexes.push(this.createNoVerbRegex(breakpoint));
+			expectedRegexes.push(this.createSetBreakpointRegex(breakpoint));
 			expectedRegexes.push(/no\s+such\s+file/);
 			this.sendCommand(command, expectedRegexes).then((result) => {
-				if (this.createBreakpointNoVerbRegex(breakpoint).test(result)) {
+				if (!this.createSetBreakpointRegex(breakpoint).test(result)) {
 					return resolve(false);
 				}
 				return resolve(true);
@@ -178,26 +178,14 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return new RegExp(regexText, "gi");
 	}
 
-	private createBreakpointNoVerbRegex(breakpoint: CobolBreakpoint): RegExp {
+	private createNoVerbRegex(breakpoint: CobolBreakpoint): RegExp {
 		const regexText = `no\\sverb\\sat\\sline\\s${breakpoint.line}\\,\\sfile\\s.*${breakpoint.source}`;
 		return new RegExp(regexText, "gi");
 	}
 
-	private createSetedBreakpointRegex(breakpoint: CobolBreakpoint): RegExp {
+	private createSetBreakpointRegex(breakpoint: CobolBreakpoint): RegExp {
 		const regexText = `set\\sbreakpoint\\sat\\sline\\s${breakpoint.line}\\,\\sfile\\s.*${breakpoint.source}`;
 		return new RegExp(regexText, "gi");
-	}
-
-    /**
-	 * Builds the command to display variable value from COBOL debugger
-	 *
-	 * @param variable variable name
-	 * @param extraArguments extra arguments to COBOL externam debugger
-	 */
-	private buildDisplayCommand(variable: string, extraArguments?: string): string {
-		extraArguments = extraArguments ? extraArguments : "";
-		const command = `display ${extraArguments} ${variable}`;
-		return command;
 	}
 
 	/**
@@ -244,13 +232,4 @@ export class ExternalDebugAdapter implements DebugInterface {
 		});
 	}
 
-}
-
-/**
- * Function to wait the number of specified milliseconds
- *
- * @param ms number of milliseconds to wait
- */
-function delay(ms: number) {
-	return new Promise(resolve => setTimeout(resolve, ms));
 }

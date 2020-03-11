@@ -16,7 +16,6 @@ import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
 import { DebuggerReplManager } from './DebuggerReplManager';
 import { window } from 'vscode';
-const { Subject } = require('await-notify');
 
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
 
@@ -113,11 +112,6 @@ export class CobolDebugSession extends DebugSession {
 		});
 	}
 
-	/**
-	 * Method fired when an unexpected problem happened while starting external COBOL debugger
-	 *
-	 * @param response response information
-	 */
 	private onProblemStartingDebugger(response: DebugProtocol.LaunchResponse): void {
 		window.showWarningMessage("Could not start external COBOL debugger.");
 		this.fireTerminateDebugEvent(response);
@@ -128,7 +122,7 @@ export class CobolDebugSession extends DebugSession {
 			return this.sendResponse(response);
 		}
 		if (!this.breakpointManager) this.breakpointManager = new BreakpointManager(this.debugRuntime)
-		this.breakpointManager.setBreakpoints(args.source, args.breakpoints).then((breakpoints) => {
+		this.breakpointManager.setBreakpoints(args.source, args.breakpoints ? args.breakpoints : []).then((breakpoints) => {
 			response.body = {
 				breakpoints: breakpoints
 			};
