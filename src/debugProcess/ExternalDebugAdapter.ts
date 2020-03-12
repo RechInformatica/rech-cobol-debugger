@@ -2,9 +2,10 @@ import { DebugInterface } from "./DebugInterface";
 import { DebugPosition } from "./DebugPosition";
 import { StepParser } from "../parser/StepParser";
 import { VariableParser } from "../parser/VariableParser";
-import { CobolBreakpoint } from "./DebugBreakpoint";
+import { CobolBreakpoint } from "./CobolBreakpoint";
 import { SyncProcess } from "./SyncProcess";
 import { debug } from "vscode";
+import { CobolParagraphBreakpoint } from "./CobolParagraphBreakpoint";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -30,10 +31,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 		debug.activeDebugConsole.append(finalText);
 	}
 
-	/**
-	 * Setups COBOL external debugger
-	 */
-	public setup(): Promise<DebugPosition> {
+	setup(): Promise<DebugPosition> {
 		return this.sendDebugPositionCommand("");
 	}
 
@@ -113,37 +111,80 @@ export class ExternalDebugAdapter implements DebugInterface {
 		});
 	}
 
-	addBreakpoint(breakpoint: CobolBreakpoint): Promise<boolean> {
-		return new Promise(async (resolve, reject) => {
-			const command = this.buildAddBreakpointCommand(breakpoint);
-			const expectedRegexes: RegExp[] = [];
-			expectedRegexes.push(this.createNoVerbRegex(breakpoint));
-			expectedRegexes.push(this.createSetBreakpointRegex(breakpoint));
-			expectedRegexes.push(/no\s+such\s+file/);
-			this.sendCommand(command, expectedRegexes).then((result) => {
-				if (!this.createSetBreakpointRegex(breakpoint).test(result)) {
-					return resolve(false);
-				}
-				return resolve(true);
-			}).catch(async (error) => {
-				return reject(error);
-			});
-		})
+	addBreakpoint(br: CobolBreakpoint): Promise<string> {
+		return this.addBreakpointOnLocation(`${br.line}`, br.source);
 	}
 
-	removeBreakpoint(breakpoint: CobolBreakpoint): Promise<boolean> {
+	addParagraphBreakpoint(br: CobolParagraphBreakpoint): Promise<string> {
+		return this.addBreakpointOnLocation(br.paragraph, br.source);
+	}
+
+	private addBreakpointOnLocation(location: string, source: string): Promise<string> {
 		return new Promise(async (resolve, reject) => {
-			const command = this.buildRemoveBreakpointCommand(breakpoint);
-			const expectedRegexes = [this.createBreakpointNotFoundRegex(breakpoint), this.createBreakpointClearedRegex(breakpoint)];
+			const command = this.buildAddBreakCommand(location, source);
+			const expectedRegexes: RegExp[] = [];
+			expectedRegexes.push(this.createNoVerbRegex(source));
+			expectedRegexes.push(this.createSetBreakRegex());
+			expectedRegexes.push(/no\s+such\s+file/);
+			expectedRegexes.push(/no\s+such\s+paragraph/);
 			this.sendCommand(command, expectedRegexes).then((result) => {
-				if (this.createBreakpointNotFoundRegex(breakpoint).test(result)) {
+				const regexResult = this.createSetBreakRegex().exec(result);
+				if (regexResult) {
+					// Returns the breakpoint full filename
+					return resolve(regexResult[3]);
+				} else {
+					return resolve(undefined);
+				}
+			}).catch(async (error) => {
+				return reject(error);
+			});
+		});
+	}
+
+	listBreakpoints(): Promise<CobolBreakpoint[]> {
+		return new Promise(async (resolve, reject) => {
+			const command = "break -l";
+			const expectedRegexes = [/\[line(\s|.)*isdb>/gmi];
+			this.sendCommand(command, expectedRegexes).then((output) => {
+				const breaks = this.extractBreaksFromListOutput(output);
+				return resolve(breaks);
+			}).catch(async (error) => {
+				return reject(error);
+			});
+		});
+	}
+
+    /**
+	 * Parses debugger 'break list' command output and returns an array
+	 * of CobolBreakpoint with breakpoint information
+	 *
+	 * @param output debugger output
+	 */
+	private extractBreaksFromListOutput(output: string): CobolBreakpoint[] {
+		const breaks: CobolBreakpoint[] = [];
+		let regex = /\[line:\s+([0-9]+)\,\s+file:\s+([\w\.]+).*\]/gi;
+		let result: RegExpExecArray | null = null;
+		while ((result = regex.exec(output)) !== null) {
+			const line = +result[1];
+			const source = result[2];
+			breaks.push({line: line, source: source});
+		}
+		return breaks;
+	}
+
+	removeBreakpoint(br: CobolBreakpoint): Promise<boolean> {
+		return new Promise(async (resolve, reject) => {
+			const command = this.buildRemoveBreakCommand(br);
+			const expectedRegexes = [this.createBreakNotFoundRegex(br), this.createBreakClearedRegex(br)];
+			this.sendCommand(command, expectedRegexes).then((result) => {
+				if (this.createBreakNotFoundRegex(br).test(result)) {
 					return resolve(false);
 				}
 				return resolve(true);
 			}).catch(async (error) => {
 				return reject(error);
 			});
-		})
+		});
 	}
 
     sendRawCommand(command: string): void {
@@ -158,34 +199,33 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return new RegExp(`not\\s+a\\s+Cobol\\s+variable\\s+`, "gi");
 	}
 
-	private buildRemoveBreakpointCommand(breakpoint: CobolBreakpoint) {
+	private buildRemoveBreakCommand(breakpoint: CobolBreakpoint) {
 		const command = `clear ${breakpoint.line} ${breakpoint.source}`
 		return command;
 	}
 
-	private buildAddBreakpointCommand(breakpoint: CobolBreakpoint): string {
-		const command = `break ${breakpoint.line} ${breakpoint.source}`
+	private buildAddBreakCommand(location: string, source: string): string {
+		const command = `break ${location} ${source}`
 		return command;
 	}
 
-	private createBreakpointClearedRegex(breakpoint: CobolBreakpoint): RegExp {
+	private createBreakClearedRegex(breakpoint: CobolBreakpoint): RegExp {
 		const regexText = `clear\\sbreakpoint\\sat\\sline\\s${breakpoint.line}\\,\\sfile\\s${breakpoint.source}`;
 		return new RegExp(regexText, "gi");
 	}
 
-	private createBreakpointNotFoundRegex(breakpoint: CobolBreakpoint): RegExp {
-		const regexText = `not\\sfound\\sbreakpoint\\sat\\sline\\s${breakpoint.line}\\,\\sfile\\s${breakpoint.source}`;
+	private createBreakNotFoundRegex(breakpoint: CobolBreakpoint): RegExp {
+		const regexText = `not\\sfound\\sbreakpoint\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s${breakpoint.source}`;
 		return new RegExp(regexText, "gi");
 	}
 
-	private createNoVerbRegex(breakpoint: CobolBreakpoint): RegExp {
-		const regexText = `no\\sverb\\sat\\sline\\s${breakpoint.line}\\,\\sfile\\s.*${breakpoint.source}`;
+	private createNoVerbRegex(source: string): RegExp {
+		const regexText = `no\\sverb\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s.*${source}`;
 		return new RegExp(regexText, "gi");
 	}
 
-	private createSetBreakpointRegex(breakpoint: CobolBreakpoint): RegExp {
-		const regexText = `set\\sbreakpoint\\sat\\sline\\s${breakpoint.line}\\,\\sfile\\s.*${breakpoint.source}`;
-		return new RegExp(regexText, "gi");
+	private createSetBreakRegex(): RegExp {
+		return /set\sbreakpoint\s(at|in)\s(line|paragraph)\s.*\,\sfile\s([\w:\/\.]+)/gi;
 	}
 
 	/**
@@ -209,7 +249,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 				return position ? resolve(position) : reject();
 			}).catch((error) => {
 				return reject(error);
-			})
+			});
 		});
 	}
 

@@ -2,7 +2,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugInterface } from "../debugProcess/DebugInterface";
 import { window } from 'vscode';
 import Q from 'q';
-import { CobolBreakpoint } from '../debugProcess/DebugBreakpoint';
+import { CobolBreakpoint } from '../debugProcess/CobolBreakpoint';
 import { SourceUtils } from './SourceUtils';
 
 
@@ -48,10 +48,19 @@ export class BreakpointManager {
 	 * @param source source object to filter breakpoints related to a specific file
 	 */
 	private getBreaksOnMap(source: DebugProtocol.Source): DebugProtocol.Breakpoint[] {
-		let breaks = this.externalDebuggerBreaks.get(source.name!);
+		return this.getBreaksOnMapFromString(source.name!);
+	}
+
+	/**
+	 * Returns all of the breakpoints on map, which represents the breakpoints on external debugger
+	 *
+	 * @param source source name to filter breakpoints related to a specific file
+	 */
+	public getBreaksOnMapFromString(source: string): DebugProtocol.Breakpoint[] {
+		let breaks = this.externalDebuggerBreaks.get(source);
 		if (!breaks) {
 			breaks = [];
-			this.externalDebuggerBreaks.set(source.name!, breaks);
+			this.externalDebuggerBreaks.set(source, breaks);
 		}
 		return breaks;
 	}
@@ -116,7 +125,7 @@ export class BreakpointManager {
 				if (result) {
 					br.verified = true;
 				} else {
-					window.showWarningMessage("Impossible to set breakpoint on this location.");
+					window.showWarningMessage(`Impossible to set breakpoint on line ${cobolBreak.line}, file ${cobolBreak.source}`);
 				}
 				self.setBreakOnMap(self, br);
 				return resolve();

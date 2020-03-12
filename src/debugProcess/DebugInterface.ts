@@ -1,5 +1,6 @@
 import { DebugPosition } from "./DebugPosition";
-import { CobolBreakpoint } from "./DebugBreakpoint";
+import { CobolBreakpoint } from "./CobolBreakpoint";
+import { CobolParagraphBreakpoint } from "./CobolParagraphBreakpoint";
 
 export interface DebugInterface {
 
@@ -59,11 +60,19 @@ export interface DebugInterface {
 	changeVariableValue(variable: string, newValue: string): Promise<void>;
 
 	/**
-	 * Adds a new Breakpoint
+	 * Adds a Breakpoint
 	 *
 	 * @param breakpoint breakpoint to set
 	 */
-	addBreakpoint(breakpoint: CobolBreakpoint): Promise<boolean>;
+	addBreakpoint(breakpoint: CobolBreakpoint): Promise<string | undefined>;
+
+	/**
+	 * Adds a Breakpoint on the specified paragraph instead of
+	 * specifying a line
+	 *
+	 * @param breakpoint breakpoint to set
+	 */
+	addParagraphBreakpoint(breakpoint: CobolParagraphBreakpoint): Promise<string | undefined>;
 
 	/**
 	 * Removes an existing breakpoint
@@ -71,6 +80,11 @@ export interface DebugInterface {
 	 * @param breakpoint breakpoint to remove
 	 */
 	removeBreakpoint(breakpoint: CobolBreakpoint): Promise<boolean>;
+
+	/**
+	 * List existing breakpoints
+	 */
+	listBreakpoints(): Promise<CobolBreakpoint[]>;
 
 	/**
 	 * Sends raw command to the external debugger.
