@@ -48,19 +48,12 @@ export class BreakpointManager {
 	 * @param source source object to filter breakpoints related to a specific file
 	 */
 	private getBreaksOnMap(source: DebugProtocol.Source): DebugProtocol.Breakpoint[] {
-		return this.getBreaksOnMapFromString(source.name!);
-	}
-
-	/**
-	 * Returns all of the breakpoints on map, which represents the breakpoints on external debugger
-	 *
-	 * @param source source name to filter breakpoints related to a specific file
-	 */
-	public getBreaksOnMapFromString(source: string): DebugProtocol.Breakpoint[] {
-		let breaks = this.externalDebuggerBreaks.get(source);
+		// Converts to uppercase because, sometimes, the same source code comes in upper and sometimes in lower from VSCode API
+		const key = source.path!.toUpperCase();
+		let breaks = this.externalDebuggerBreaks.get(key);
 		if (!breaks) {
 			breaks = [];
-			this.externalDebuggerBreaks.set(source, breaks);
+			this.externalDebuggerBreaks.set(key, breaks);
 		}
 		return breaks;
 	}
