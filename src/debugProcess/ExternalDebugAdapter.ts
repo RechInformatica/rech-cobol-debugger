@@ -7,6 +7,11 @@ import { SyncProcess } from "./SyncProcess";
 import { debug } from "vscode";
 import { CobolParagraphBreakpoint } from "./CobolParagraphBreakpoint";
 
+/** Index where filename can be found on regular expression of breakpoint commands */
+const FILENAME_BREAKPOINT_CMD_OUTPUT = 3;
+/** Index where filename can be found on regular expression of list command */
+const FILENAME_LIST_CMD_OUTPUT = 2;
+
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
  */
@@ -131,7 +136,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 				const regexResult = this.createSetBreakRegex().exec(result);
 				if (regexResult) {
 					// Returns the breakpoint full filename
-					return resolve(regexResult[3]);
+					return resolve(regexResult[FILENAME_BREAKPOINT_CMD_OUTPUT]);
 				} else {
 					return resolve(undefined);
 				}
@@ -162,11 +167,11 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 */
 	private extractBreaksFromListOutput(output: string): CobolBreakpoint[] {
 		const breaks: CobolBreakpoint[] = [];
-		let regex = /\[line:\s+([0-9]+)\,\s+file:\s+([\w\.]+).*\]/gi;
+		const regex = /\[line:\s+([0-9]+)\,\s+file:\s+([\w\.]+).*\]/gi;
 		let result: RegExpExecArray | null = null;
 		while ((result = regex.exec(output)) !== null) {
 			const line = +result[1];
-			const source = result[2];
+			const source = result[FILENAME_LIST_CMD_OUTPUT];
 			breaks.push({line: line, source: source});
 		}
 		return breaks;

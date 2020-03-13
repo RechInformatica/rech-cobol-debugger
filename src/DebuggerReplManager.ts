@@ -5,6 +5,8 @@ import { CobolParagraphBreakpoint } from "./debugProcess/CobolParagraphBreakpoin
 
 /** Breakpoint commands for debug console */
 const DEBUGGER_BREAK_COMMANDS = ["br"];
+/** Program name index within command line to insert breakpoint */
+const PROGRAM_NAME_INDEX = 2;
 
 /**
  * Class to manage 'repl' (Read–eval–print loop) console commands
@@ -55,11 +57,13 @@ export class DebuggerReplManager {
 	 */
 	private handleBreakFromCmd(command: string): boolean {
 		const splitted = command.trim().split(/\s+/);
-		if (splitted.length > 2) {
+		if (splitted.length > 1) {
 			const line = Number(splitted[1]);
-			const source = splitted[2];
-			// User typed a paragraph name
-			if (isNaN(line)) {
+			const source = this.extractProgramNameFromCmd(splitted);
+			// User typed a paragraph name (not a line number) or did not specify program name
+			if (isNaN(line) || !source) {
+				// PS.: In this situation we do not have enough information to set breakpoint on
+				// VSCode API (lacks line number and/or program name)
 				this.addParagraphBreak({ paragraph: splitted[1], source: source});
 			} else {
 				this.addLineBreak({ line: line, source: source});
@@ -67,6 +71,17 @@ export class DebuggerReplManager {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Extracts the program name from command line or returns empty string
+	 * when no program has been specified
+	 *
+	 * @param splittedCmd command line splitted by spaces
+	 */
+	private extractProgramNameFromCmd(splittedCmd: string[]): string {
+		const programName = splittedCmd.length > PROGRAM_NAME_INDEX ? splittedCmd[PROGRAM_NAME_INDEX] : "";
+		return programName;
 	}
 
 	/**
