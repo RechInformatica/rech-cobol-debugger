@@ -81,13 +81,18 @@ export class ExternalDebugAdapter implements DebugInterface {
 	requestVariableValue(args: string): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			const command = `display ${args}`;
+			if (args.trim().length === 0) {
+				return reject("Empty variable name");
+			}
 			const possibleOutputResults: RegExp[] = [];
 			possibleOutputResults.push(VariableParser.createVariableValueRegex());
 			possibleOutputResults.push(this.createVariableNotFoundRegex());
 			possibleOutputResults.push(this.createNotVariableOutputRegex());
-			possibleOutputResults.push(new RegExp(`Error\\:\\s+subscript\\s+required\\s+`, "gi"));
-			possibleOutputResults.push(/property\s+required/);
-			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/);
+			possibleOutputResults.push(/Error\:\s+subscript\s+required\s+/gi);
+			possibleOutputResults.push(/Error\:\s+index\s+out\s+of\s+bounds\s+/gi);
+			possibleOutputResults.push(/property\s+required/gi);
+			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/gi);
+			possibleOutputResults.push(/unexpected\s+error\s+usage/gi);
 			this.sendCommand(command, possibleOutputResults).then((result) => {
 				const value = VariableParser.createVariableValueRegex().exec(result);
 				if (value && value[1]) {

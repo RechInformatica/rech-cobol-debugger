@@ -1,10 +1,12 @@
 'use strict';
 
-import { ExtensionContext, commands, window, debug, DebugAdapterDescriptorFactory, languages, TextDocument, Position, ProviderResult, EvaluatableExpression } from 'vscode';
+import { ExtensionContext, commands, window, debug, DebugAdapterDescriptorFactory, languages, TextDocument, Position, ProviderResult, EvaluatableExpression, Range } from 'vscode';
 import { CobolConfigurationProvider } from './CobolConfigurationProvider';
 import { CobolDebugAdapterDescriptorFactory } from './CobolDebugAdapterDescriptorFactory';
 import { Configuration } from './helper/Configuration';
+import { CobolEvaluatableExpressionProvider } from './debugProcess/CobolEvaluatableExpressionProvider';
 
+/** Default selections of input boxes typed by user */
 const DEFAULT_SELECTIONS: Map<string, string> = new Map<string, string>();
 
 export function activate(context: ExtensionContext) {
@@ -43,12 +45,7 @@ export function activate(context: ExtensionContext) {
 	}
 
 	// override VS Code's default implementation of the debug hover
-	languages.registerEvaluatableExpressionProvider('COBOL', {
-		provideEvaluatableExpression(document: TextDocument, position: Position): ProviderResult<EvaluatableExpression> {
-			const wordRange = document.getWordRangeAtPosition(position)
-			return wordRange ? new EvaluatableExpression(wordRange) : undefined;
-		}
-	});
+	languages.registerEvaluatableExpressionProvider('COBOL', new CobolEvaluatableExpressionProvider());
 
 }
 
