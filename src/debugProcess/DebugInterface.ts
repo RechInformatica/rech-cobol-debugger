@@ -57,7 +57,7 @@ export interface DebugInterface {
 	 * @param variable variable name
 	 * @param newValue new value of the specified variable
 	 */
-	changeVariableValue(variable: string, newValue: string): Promise<void>;
+	changeVariableValue(variable: string, newValue: string): Promise<boolean>;
 
 	/**
 	 * Adds a Breakpoint

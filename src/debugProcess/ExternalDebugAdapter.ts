@@ -106,15 +106,20 @@ export class ExternalDebugAdapter implements DebugInterface {
 		});
 	}
 
-	changeVariableValue(variable: string, newValue: string): Promise<void> {
+	changeVariableValue(variable: string, newValue: string): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			const command = "let " + variable + "=" + newValue;
 			const possibleOutputResults: RegExp[] = [];
-			possibleOutputResults.push(new RegExp(`new\\s+value\\s+of\\s+${variable}\\s+is\\s+`, "gi"));
+			possibleOutputResults.push(this.createNewVariableValueRegex(variable));
 			possibleOutputResults.push(this.createNotVariableOutputRegex());
 			possibleOutputResults.push(new RegExp(`data-item\\s+not\\s+found\\s+\\'${variable}\\'`, "gi"));
-			this.sendCommand(command, possibleOutputResults).then(() => {
-				return resolve();
+			possibleOutputResults.push(/boolean\s+value\s+required\s+\(true\|false\)/gi);
+			this.sendCommand(command, possibleOutputResults).then((output) => {
+				if (this.createNewVariableValueRegex(variable).test(output)) {
+					return resolve(true);
+				} else {
+					return resolve(false);
+				}
 			}).catch((e) => {
 				return reject(e);
 			})
@@ -199,6 +204,15 @@ export class ExternalDebugAdapter implements DebugInterface {
 
     sendRawCommand(command: string): void {
 		this.debugProcess.writeComanndToProcessInput(command);
+	}
+
+	/**
+	 * Crates a regular expression to detect output indicating that value has been correctly changed
+	 *
+	 * @param variable  variable name
+	 */
+	private createNewVariableValueRegex(variable: string): RegExp {
+		return new RegExp(`new\\s+value\\s+of\\s+${variable}\\s+is\\s+`, "gi");
 	}
 
 	/**

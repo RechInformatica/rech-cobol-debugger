@@ -242,10 +242,12 @@ export class CobolDebugSession extends DebugSession {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
-		this.debugRuntime.changeVariableValue(args.name, args.value).then(() => {
-			response.body = {
-				value: args.value
-			};
+		this.debugRuntime.changeVariableValue(args.name, args.value).then((success) => {
+			if (success) {
+				response.body = {
+					value: args.value
+				};
+			}
 			this.sendResponse(response);
 		}).catch(() => {
 			this.fireTerminateDebugEvent(response);
