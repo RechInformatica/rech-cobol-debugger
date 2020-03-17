@@ -1,4 +1,5 @@
 import { ChildProcess, exec } from "child_process";
+import { debug } from "vscode";
 
 /**
  * Class to run commands on external process.
@@ -181,6 +182,7 @@ export class SyncProcess {
 	 * @param command command to be written
 	 */
 	public writeComanndToProcessInput(command: string): void {
+        debug.activeDebugConsole.append("\nCurrent command is: " + command + "\n");
 		const fullCommand = command + "\n";
 		this.externalProcess!.stdin.write(fullCommand);
 	}
