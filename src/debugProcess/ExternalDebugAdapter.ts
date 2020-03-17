@@ -32,8 +32,9 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 * @param outData data to be appended
 	 */
 	private appendOutputToDebugConsole(outData: string): void {
-		const finalText = outData.replace(/isdb>\s+/g, "");
-		debug.activeDebugConsole.append(finalText);
+		// const finalText = outData.replace(/isdb>\s+/g, "");
+		// debug.activeDebugConsole.append(finalText);
+		console.log(outData);
 	}
 
 	setup(): Promise<DebugPosition> {
@@ -88,11 +89,11 @@ export class ExternalDebugAdapter implements DebugInterface {
 			possibleOutputResults.push(VariableParser.createVariableValueRegex());
 			possibleOutputResults.push(this.createVariableNotFoundRegex());
 			possibleOutputResults.push(this.createNotVariableOutputRegex());
-			possibleOutputResults.push(/Error\:\s+subscript\s+required\s+/gi);
-			possibleOutputResults.push(/Error\:\s+index\s+out\s+of\s+bounds\s+/gi);
-			possibleOutputResults.push(/property\s+required/gi);
-			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/gi);
-			possibleOutputResults.push(/unexpected\s+error\s+usage/gi);
+			possibleOutputResults.push(/Error\:\s+subscript\s+required\s+/i);
+			possibleOutputResults.push(/Error\:\s+index\s+out\s+of\s+bounds\s+/i);
+			possibleOutputResults.push(/property\s+required/i);
+			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/i);
+			possibleOutputResults.push(/unexpected\s+error\s+usage/i);
 			this.sendCommand(command, possibleOutputResults).then((result) => {
 				const value = VariableParser.createVariableValueRegex().exec(result);
 				if (value && value[1]) {
@@ -112,8 +113,8 @@ export class ExternalDebugAdapter implements DebugInterface {
 			const possibleOutputResults: RegExp[] = [];
 			possibleOutputResults.push(this.createNewVariableValueRegex(variable));
 			possibleOutputResults.push(this.createNotVariableOutputRegex());
-			possibleOutputResults.push(new RegExp(`data-item\\s+not\\s+found\\s+\\'${variable}\\'`, "gi"));
-			possibleOutputResults.push(/boolean\s+value\s+required\s+\(true\|false\)/gi);
+			possibleOutputResults.push(new RegExp(`data-item\\s+not\\s+found\\s+\\'${variable}\\'`, "i"));
+			possibleOutputResults.push(/boolean\s+value\s+required\s+\(true\|false\)/i);
 			this.sendCommand(command, possibleOutputResults).then((output) => {
 				if (this.createNewVariableValueRegex(variable).test(output)) {
 					return resolve(true);
@@ -159,7 +160,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	listBreakpoints(): Promise<CobolBreakpoint[]> {
 		return new Promise(async (resolve, reject) => {
 			const command = "break -l";
-			const expectedRegexes = [/\[line(\s|.)*isdb>/gmi];
+			const expectedRegexes = [/\[line(\s|.)*isdb>/mi];
 			this.sendCommand(command, expectedRegexes).then((output) => {
 				const breaks = this.extractBreaksFromListOutput(output);
 				return resolve(breaks);
@@ -212,7 +213,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 * @param variable  variable name
 	 */
 	private createNewVariableValueRegex(variable: string): RegExp {
-		return new RegExp(`new\\s+value\\s+of\\s+${variable}\\s+is\\s+`, "gi");
+		return new RegExp(`new\\s+value\\s+of\\s+${variable}\\s+is\\s+`, "i");
 	}
 
 	/**
@@ -220,7 +221,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 * a Cobol variable
 	 */
 	private createNotVariableOutputRegex(): RegExp {
-		return new RegExp(`not\\s+a\\s+Cobol\\s+variable\\s+`, "gi");
+		return new RegExp(`not\\s+a\\s+Cobol\\s+variable\\s+`, "i");
 	}
 
 	private buildRemoveBreakCommand(breakpoint: CobolBreakpoint) {
@@ -235,21 +236,21 @@ export class ExternalDebugAdapter implements DebugInterface {
 
 	private createBreakClearedRegex(breakpoint: CobolBreakpoint): RegExp {
 		const regexText = `clear\\sbreakpoint\\sat\\sline\\s${breakpoint.line}\\,\\sfile\\s${breakpoint.source}`;
-		return new RegExp(regexText, "gi");
+		return new RegExp(regexText, "i");
 	}
 
 	private createBreakNotFoundRegex(breakpoint: CobolBreakpoint): RegExp {
 		const regexText = `not\\sfound\\sbreakpoint\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s${breakpoint.source}`;
-		return new RegExp(regexText, "gi");
+		return new RegExp(regexText, "i");
 	}
 
 	private createNoVerbRegex(source: string): RegExp {
 		const regexText = `no\\sverb\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s.*${source}`;
-		return new RegExp(regexText, "gi");
+		return new RegExp(regexText, "i");
 	}
 
 	private createSetBreakRegex(): RegExp {
-		return /set\sbreakpoint\s(at|in)\s(line|paragraph)\s.*\,\sfile\s([\w:\/\.]+)/gi;
+		return /set\sbreakpoint\s(at|in)\s(line|paragraph)\s.*\,\sfile\s([\w:\/\.]+)/i;
 	}
 
 	/**
@@ -257,7 +258,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 */
 	private createVariableNotFoundRegex(): RegExp {
 		const regexText = `data-item\\s+not\\s+found\\s+`;
-		return new RegExp(regexText, "gi");
+		return new RegExp(regexText, "i");
 	}
 
 	/**
@@ -267,7 +268,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 */
 	private sendDebugPositionCommand(commandName: string): Promise<DebugPosition> {
 		return new Promise(async (resolve, reject) => {
-			const fileInformationRegex = /line=(\d+)\s+file=([\w\.:\\/]+)/gi;
+			const fileInformationRegex = /line=(\d+)\s+file=([\w\.:\\\/]+)/i;
 			this.sendCommand(commandName, [fileInformationRegex]).then((response) => {
 				const position = new StepParser().parse(response);
 				return position ? resolve(position) : reject();
@@ -285,7 +286,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 */
 	private async sendCommand(command: string, expectedRegexes: RegExp[]): Promise<string> {
 		return new Promise(async (resolve, reject) => {
-			const failRegexes: RegExp[] = [/exit\s+isdb/gi, /Debugger\sis\snot\ssuspended/gi, /Exception\s+caught\s+at\s+line/gi, /Cannot\s+load\s+class\s+/gi];
+			const failRegexes: RegExp[] = [/exit\s+isdb/i, /Debugger\sis\snot\ssuspended/i, /Exception\s+caught\s+at\s+line/i, /Cannot\s+load\s+class\s+/i];
 			this.debugProcess.sendCommand({
 				command: command,
 				successRegexes: expectedRegexes,

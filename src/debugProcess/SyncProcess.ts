@@ -130,9 +130,11 @@ export class SyncProcess {
 	 */
 	private handleCommand(command: Command): void {
 		if (this.responseMatches(this.lastResponse, command.successRegexes)) {
-			command.success(this.lastResponse);
-			this.fireNextCommand();
-			return;
+			if ((/isdb>\s*$/i).test(this.lastResponse)) {
+				command.success(this.lastResponse);
+				this.fireNextCommand();
+				return;
+			}
 		}
 		if (this.responseMatches(this.lastResponse, command.failRegexes)) {
 			command.fail(this.lastResponse);
