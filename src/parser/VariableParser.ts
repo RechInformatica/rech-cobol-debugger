@@ -123,10 +123,17 @@ export class VariableParser {
 		if (COBOL_RESERVED_WORDS.indexOf(word) >= 0) {
 			return false;
 		}
-		if (/[0-9]+/g.test(word)) {
+		if (this.createOnlyNumbersRegex().test(word)) {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Creates and returns a regular expression to detect only numbers, possibly with decimal.
+	 */
+	private createOnlyNumbersRegex(): RegExp {
+		return /^[0-9\,\.]*$/g;
 	}
 
 	public captureVariableInfo(variableName: string): Promise<DebugProtocol.Variable> {
