@@ -32,9 +32,8 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 * @param outData data to be appended
 	 */
 	private appendOutputToDebugConsole(outData: string): void {
-		// const finalText = outData.replace(/isdb>\s+/g, "");
-		// debug.activeDebugConsole.append(finalText);
-		console.log(outData);
+		const finalText = outData.replace(/isdb>\s+/g, "");
+		debug.activeDebugConsole.append(finalText);
 	}
 
 	setup(): Promise<DebugPosition> {
