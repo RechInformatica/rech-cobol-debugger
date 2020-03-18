@@ -224,12 +224,14 @@ export class ExternalDebugAdapter implements DebugInterface {
 	}
 
 	private buildRemoveBreakCommand(breakpoint: CobolBreakpoint) {
-		const command = `clear ${breakpoint.line} ${breakpoint.source}`
+		// Inserts double quotes to prevent problems with files containing spaces on name
+		const command = `clear ${breakpoint.line} \"${breakpoint.source}\"`
 		return command;
 	}
 
 	private buildAddBreakCommand(location: string, source: string): string {
-		const command = `break ${location} ${source}`
+		// Inserts double quotes to prevent problems with files containing spaces on name
+		const command = `break ${location} \"${source}\"`;
 		return command;
 	}
 
@@ -249,7 +251,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	}
 
 	private createSetBreakRegex(): RegExp {
-		return /set\sbreakpoint\s(at|in)\s(line|paragraph)\s.*\,\sfile\s([\w:\/\.]+)/i;
+		return /set\sbreakpoint\s(at|in)\s(line|paragraph)\s.*\,\sfile\s([\w\.:\\\/ ]+)/i;
 	}
 
 	/**
