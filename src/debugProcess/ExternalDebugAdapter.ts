@@ -40,7 +40,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 		// These regular expressions can only appear at startup, when user
 		// does not specify any parameter to external debugger through
 		// command-line or specifies an invalid file to start debugging
-		return this.sendDebugPositionCommand("", [/Usage\:\s+isdb\s+\[\-opt1/i, /java\.lang\.NoClassDefFoundError/i]);
+		return this.sendDebugPositionCommand("", [/Usage\:\s+isdb\s+\[\-opt1/i, /java\.lang\.NoClassDefFoundError/i, /Cannot\s+load\s+class\s+/i]);
 	}
 
 	start(): Promise<DebugPosition> {
@@ -96,6 +96,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 			possibleOutputResults.push(/property\s+required/i);
 			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/i);
 			possibleOutputResults.push(/unexpected\s+error\s+usage/i);
+			possibleOutputResults.push(/syntax\s+error/i);
 			this.sendCommand(command, possibleOutputResults).then((result) => {
 				const value = VariableParser.createVariableValueRegex().exec(result);
 				if (value && value[1]) {
@@ -279,15 +280,12 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 * Sends a command which will return the new debug position within source code
 	 *
 	 * @param commandName command to be fired
+	 * @param extraFailRegexes extra regular expressions indicating problems from output
 	 */
-	private sendDebugPositionCommand(commandName: string, extraRegexes?: RegExp[]): Promise<DebugPosition> {
+	private sendDebugPositionCommand(commandName: string, extraFailRegexes?: RegExp[]): Promise<DebugPosition> {
 		return new Promise(async (resolve, reject) => {
-			const allRegExes: RegExp[] = [];
-			allRegExes.push(new StepParser().createDebugPositionRegex());
-			if (extraRegexes) {
-				extraRegexes.forEach(r => allRegExes.push(r));
-			}
-			this.sendCommand(commandName, allRegExes).then((response) => {
+			const fileInformationRegex = new StepParser().createDebugPositionRegex();
+			this.sendCommand(commandName, [fileInformationRegex], extraFailRegexes).then((response) => {
 				const position = new StepParser().parse(response);
 				return position ? resolve(position) : reject();
 			}).catch((error) => {
@@ -302,9 +300,12 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 * @param command command to be fired
 	 * @param expectedRegexes regular expressions to match debugger output
 	 */
-	private async sendCommand(command: string, expectedRegexes: RegExp[]): Promise<string> {
+	private async sendCommand(command: string, expectedRegexes: RegExp[], extraFailRegexes?: RegExp[]): Promise<string> {
 		return new Promise(async (resolve, reject) => {
-			const failRegexes: RegExp[] = [/exit\s+isdb/i, /Debugger\sis\snot\ssuspended/i, /Exception\s+caught\s+at\s+line/i, /Cannot\s+load\s+class\s+/i];
+			const failRegexes: RegExp[] = [/exit\s+isdb/i, /Debugger\sis\snot\ssuspended/i, /Exception\s+caught\s+at\s+line/i];
+			if (extraFailRegexes) {
+				extraFailRegexes.forEach(r => failRegexes.push(r));
+			}
 			this.debugProcess.sendCommand({
 				command: command,
 				successRegexes: expectedRegexes,
