@@ -37,7 +37,10 @@ export class ExternalDebugAdapter implements DebugInterface {
 	}
 
 	setup(): Promise<DebugPosition> {
-		return this.sendDebugPositionCommand("");
+		// These regular expressions can only appear at startup, when user
+		// does not specify any parameter to external debugger through
+		// command-line or specifies an invalid file to start debugging
+		return this.sendDebugPositionCommand("", [/Usage\:\s+isdb\s+\[\-opt1/i, /java\.lang\.NoClassDefFoundError/i]);
 	}
 
 	start(): Promise<DebugPosition> {
@@ -277,10 +280,14 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 *
 	 * @param commandName command to be fired
 	 */
-	private sendDebugPositionCommand(commandName: string): Promise<DebugPosition> {
+	private sendDebugPositionCommand(commandName: string, extraRegexes?: RegExp[]): Promise<DebugPosition> {
 		return new Promise(async (resolve, reject) => {
-			const fileInformationRegex = new StepParser().createDebugPositionRegex();
-			this.sendCommand(commandName, [fileInformationRegex]).then((response) => {
+			const allRegExes: RegExp[] = [];
+			allRegExes.push(new StepParser().createDebugPositionRegex());
+			if (extraRegexes) {
+				extraRegexes.forEach(r => allRegExes.push(r));
+			}
+			this.sendCommand(commandName, allRegExes).then((response) => {
 				const position = new StepParser().parse(response);
 				return position ? resolve(position) : reject();
 			}).catch((error) => {
