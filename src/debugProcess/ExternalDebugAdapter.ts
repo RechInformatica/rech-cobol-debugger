@@ -267,7 +267,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 */
 	private sendDebugPositionCommand(commandName: string): Promise<DebugPosition> {
 		return new Promise(async (resolve, reject) => {
-			const fileInformationRegex = /line=(\d+)\s+file=([\w\.:\\\/ ]+)/i;
+			const fileInformationRegex = new StepParser().createDebugPositionRegex();
 			this.sendCommand(commandName, [fileInformationRegex]).then((response) => {
 				const position = new StepParser().parse(response);
 				return position ? resolve(position) : reject();
