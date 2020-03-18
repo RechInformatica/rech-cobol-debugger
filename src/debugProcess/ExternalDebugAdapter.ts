@@ -224,15 +224,25 @@ export class ExternalDebugAdapter implements DebugInterface {
 	}
 
 	private buildRemoveBreakCommand(breakpoint: CobolBreakpoint) {
-		// Inserts double quotes to prevent problems with files containing spaces on name
-		const command = `clear ${breakpoint.line} \"${breakpoint.source}\"`
+		const command = `clear ${breakpoint.line} ${this.addQuotesIfNeeded(breakpoint.source)}`
 		return command;
 	}
 
 	private buildAddBreakCommand(location: string, source: string): string {
-		// Inserts double quotes to prevent problems with files containing spaces on name
-		const command = `break ${location} \"${source}\"`;
+		const command = `break ${location} ${this.addQuotesIfNeeded(source)}`;
 		return command;
+	}
+
+	/**
+	 * Add quotes to source name if needed
+	 *
+	 * @param source source to add quotes
+	 */
+	private addQuotesIfNeeded(source: string): string {
+		if (source.length === 0) {
+			return "";
+		}
+		return `\"${source}\"`;
 	}
 
 	private createBreakClearedRegex(breakpoint: CobolBreakpoint): RegExp {
