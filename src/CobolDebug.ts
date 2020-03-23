@@ -91,6 +91,9 @@ export class CobolDebugSession extends DebugSession {
 		response.body.supportsTerminateRequest = true;
 		response.body.supportsSetVariable = true;
 		response.body.supportsEvaluateForHovers = true;
+		response.body.supportsConditionalBreakpoints = true;
+		response.body.supportsHitConditionalBreakpoints = false;
+		response.body.supportsLogPoints = false;
 		this.sendResponse(response);
 		// since this debug adapter can accept configuration requests like 'setBreakpoint' at any time,
 		// we request them early by sending an 'initializeRequest' to the frontend.

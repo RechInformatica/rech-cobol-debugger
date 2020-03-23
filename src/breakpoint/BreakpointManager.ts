@@ -12,7 +12,7 @@ import { SourceUtils } from './SourceUtils';
 export class BreakpointManager {
 
 	private debugRuntime: DebugInterface;
-	private externalDebuggerBreaks: Map<string, DebugProtocol.Breakpoint[]> = new Map<string, DebugProtocol.Breakpoint[]>();
+	private externalDebuggerBreaks: Map<string, ManagedBreakpoint[]> = new Map<string, ManagedBreakpoint[]>();
 
 	constructor(debugRuntime: DebugInterface) {
 		this.debugRuntime = debugRuntime;
@@ -27,12 +27,12 @@ export class BreakpointManager {
 	public setBreakpoints(source: DebugProtocol.Source, sourceBreaks: DebugProtocol.SourceBreakpoint[]): Promise<DebugProtocol.Breakpoint[]> {
 		return new Promise((resolve, reject) => {
 			SourceUtils.normalize(source);
-			const breaks = this.convertSourceBreakToBreak(source, sourceBreaks);
+			const breaks = this.convertSourceBreaks(source, sourceBreaks);
 			const newBreaks = breaks.filter(b => !this.isKnownBreakpoint(this.getBreaksOnMap(source), b));
 			const oldBreaks = this.getBreaksOnMap(source).filter(b => !this.isKnownBreakpoint(breaks, b));
-			this.handleBreaks(newBreaks, this.setBreakOnDebugger).then(() => {
-				this.handleBreaks(oldBreaks, this.removeBreakOnDebugger).then(() => {
-					return resolve(this.getBreaksOnMap(source));
+			this.handleBreaks(oldBreaks, this.removeBreakOnDebugger).then(() => {
+				this.handleBreaks(newBreaks, this.setBreakOnDebugger).then(() => {
+					return resolve(this.getDebugProtocolBreaksOnMap(source));
 				}).catch((error) => {
 					reject(error);
 				})
@@ -43,11 +43,28 @@ export class BreakpointManager {
 	}
 
 	/**
+	 * Returns an array of DebugProtocol breakpoints from map.
+	 *
+	 * @param source source to filter breakpoints
+	 */
+	private getDebugProtocolBreaksOnMap(source: DebugProtocol.Source): DebugProtocol.Breakpoint[] {
+		const breaks = this.getBreaksOnMap(source);
+		return breaks.map<DebugProtocol.Breakpoint>((b) => {
+			return {
+				source: b.source,
+				line: b.line,
+				column: b.column,
+				verified: b.verified,
+			}
+		});
+	}
+
+	/**
 	 * Returns all of the breakpoints on map, which represents the breakpoints on external debugger
 	 *
 	 * @param source source object to filter breakpoints related to a specific file
 	 */
-	private getBreaksOnMap(source: DebugProtocol.Source): DebugProtocol.Breakpoint[] {
+	private getBreaksOnMap(source: DebugProtocol.Source): ManagedBreakpoint[] {
 		// Converts to uppercase because, sometimes, the same source code comes in upper and sometimes in lower from VSCode API
 		const key = source.path!.toUpperCase();
 		let breaks = this.externalDebuggerBreaks.get(key);
@@ -64,11 +81,12 @@ export class BreakpointManager {
 	 * @param source source object
 	 * @param sourceBreaks source breakpoints
 	 */
-	private convertSourceBreakToBreak(source: DebugProtocol.Source, sourceBreaks: DebugProtocol.SourceBreakpoint[]): DebugProtocol.Breakpoint[] {
-		return sourceBreaks.map<DebugProtocol.Breakpoint>(b => {
+	private convertSourceBreaks(source: DebugProtocol.Source, sourceBreaks: DebugProtocol.SourceBreakpoint[]): ManagedBreakpoint[] {
+		return sourceBreaks.map<ManagedBreakpoint>(b => {
 			return {
 				line: b.line,
 				column: b.column,
+				condition: b.condition,
 				source: source,
 				verified: false,
 			}
@@ -81,8 +99,8 @@ export class BreakpointManager {
 	 * @param breaks all breakpoints
 	 * @param target breakpoint to check if exists on the specified list
 	 */
-	private isKnownBreakpoint(breaks: DebugProtocol.Breakpoint[], target: DebugProtocol.Breakpoint): boolean {
-		return breaks.some(b => SourceUtils.areSourcesEqual(target.source, b.source) && target.line == b.line);
+	private isKnownBreakpoint(breaks: ManagedBreakpoint[], target: ManagedBreakpoint): boolean {
+		return breaks.some(b => SourceUtils.areSourcesEqual(target.source, b.source) && target.line === b.line && target.condition === b.condition);
 	}
 
 	/**
@@ -91,7 +109,7 @@ export class BreakpointManager {
 	 * @param breaks breakpoints to be handler
 	 * @param breakHandler handler of breakpoints
 	 */
-	private handleBreaks(breaks: DebugProtocol.Breakpoint[], breakHandler: (self: BreakpointManager, b: DebugProtocol.Breakpoint) => Promise<void>): Promise<void> {
+	private handleBreaks(breaks: ManagedBreakpoint[], breakHandler: (self: BreakpointManager, b: ManagedBreakpoint) => Promise<void>): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const breaksPromises = breaks.map<Promise<void>>(b => breakHandler(this, b));
 			Q.allSettled(breaksPromises).then(() => {
@@ -108,7 +126,7 @@ export class BreakpointManager {
 	 * @param self instance of BreakpointManager where breakpoint will be removed
 	 * @param br breakpoint to be removed on external debugger
 	 */
-	private setBreakOnDebugger(self: BreakpointManager, br: DebugProtocol.Breakpoint): Promise<void> {
+	private setBreakOnDebugger(self: BreakpointManager, br: ManagedBreakpoint): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const cobolBreak = self.createCobolBreakpoint(br);
 			if (!cobolBreak) {
@@ -135,7 +153,7 @@ export class BreakpointManager {
 	 * @param self instance of BreakpointManager where breakpoint will be set
 	 * @param br breakpoint to be set on instance Map
 	 */
-	private setBreakOnMap(self: BreakpointManager, br: DebugProtocol.Breakpoint): void {
+	private setBreakOnMap(self: BreakpointManager, br: ManagedBreakpoint): void {
 		self.getBreaksOnMap(br.source!).push(br);
 	}
 
@@ -145,7 +163,7 @@ export class BreakpointManager {
 	 * @param self instance of BreakpointManager where breakpoint will be removed
 	 * @param br breakpoint to be removed on external debugger
 	 */
-	private removeBreakOnDebugger(self: BreakpointManager, br: DebugProtocol.Breakpoint): Promise<void> {
+	private removeBreakOnDebugger(self: BreakpointManager, br: ManagedBreakpoint): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const cobolBreak = self.createCobolBreakpoint(br);
 			if (!cobolBreak) {
@@ -167,7 +185,7 @@ export class BreakpointManager {
 	 * @param self instance of BreakpointManager where breakpoint will be removed
 	 * @param br breakpoint to be removed on instance Map
 	 */
-	private removeBreakOnMap(self: BreakpointManager, br: DebugProtocol.Breakpoint): void {
+	private removeBreakOnMap(self: BreakpointManager, br: ManagedBreakpoint): void {
 		const breaksOnDebugger = self.getBreaksOnMap(br.source!);
 		breaksOnDebugger.splice(breaksOnDebugger.indexOf(br), 1);
 	}
@@ -177,14 +195,23 @@ export class BreakpointManager {
 	 *
 	 * @param br instance of breakpoint of VSCode API to be converted do CobolBreakpoint
 	 */
-	private createCobolBreakpoint(br: DebugProtocol.Breakpoint): CobolBreakpoint | undefined {
+	private createCobolBreakpoint(br: ManagedBreakpoint): CobolBreakpoint | undefined {
 		if (!br.line || !br.source || !br.source.name) {
 			return undefined;
 		}
 		return {
 			line: br.line,
-			source: br.source.name
+			source: br.source.name,
+			condition: br.condition
 		};
 	}
 
+}
+
+interface ManagedBreakpoint {
+	source?: DebugProtocol.Source;
+	line: number;
+	column?: number;
+	condition?: string;
+	verified: boolean;
 }

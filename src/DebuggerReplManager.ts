@@ -7,6 +7,8 @@ import { CobolParagraphBreakpoint } from "./debugProcess/CobolParagraphBreakpoin
 const DEBUGGER_BREAK_COMMANDS = ["br"];
 /** Program name index within command line to insert breakpoint */
 const PROGRAM_NAME_INDEX = 2;
+/** Condition index within command line to insert breakpoint */
+const CONDITION_INDEX = 1;
 
 /**
  * Class to manage 'repl' (Read–eval–print loop) console commands
@@ -60,13 +62,14 @@ export class DebuggerReplManager {
 		if (splitted.length > 1) {
 			const line = Number(splitted[1]);
 			const source = this.extractProgramNameFromCmd(splitted);
+			const condition = this.extractConditionFromCmd(command);
 			// User typed a paragraph name (not a line number) or did not specify program name
 			if (isNaN(line) || !source) {
 				// PS.: In this situation we do not have enough information to set breakpoint on
 				// VSCode API (lacks line number and/or program name)
-				this.addParagraphBreak({ paragraph: splitted[1], source: source});
+				this.addParagraphBreak({ paragraph: splitted[1], source: source, condition: condition});
 			} else {
-				this.addLineBreak({ line: line, source: source});
+				this.addLineBreak({ line: line, source: source, condition: condition});
 			}
 			return true;
 		}
@@ -82,6 +85,21 @@ export class DebuggerReplManager {
 	private extractProgramNameFromCmd(splittedCmd: string[]): string {
 		const programName = splittedCmd.length > PROGRAM_NAME_INDEX ? splittedCmd[PROGRAM_NAME_INDEX] : "";
 		return programName;
+	}
+
+	/**
+	 * Extracts optional breakpoint condition from command line or returns empty string
+	 * when no condition has been specified
+	 *
+	 * @param command command line typed by user
+	 */
+	private extractConditionFromCmd(command: string): string {
+		const regexResult = /when\s+(.*)/i.exec(command);
+		if (regexResult && regexResult.length > CONDITION_INDEX) {
+			const condition = regexResult[CONDITION_INDEX];
+			return condition;
+		}
+		return "";
 	}
 
 	/**
@@ -102,7 +120,7 @@ export class DebuggerReplManager {
 					const lastBreak = breaks[breaks.length - 1];
 					// The breakpoint on 'list' command does not return the full name,
 					// so we need to use the full name returned on addBreakpoint command
-					const fullNameBreakpoint: CobolBreakpoint = {line: lastBreak.line, source: filename};
+					const fullNameBreakpoint: CobolBreakpoint = {line: lastBreak.line, source: filename, condition: bp.condition};
 					this.addLineBreak(fullNameBreakpoint);
 				}).catch();
 			}
@@ -122,7 +140,7 @@ export class DebuggerReplManager {
 		const uri = Uri.file(bp.source);
 		const pos = new Position(bp.line - 1, 0);
 		const loc = new Location(uri, pos);
-		const breakpoint = new SourceBreakpoint(loc, true);
+		const breakpoint = new SourceBreakpoint(loc, true, bp.condition);
 		debug.addBreakpoints([breakpoint]);
 	}
 

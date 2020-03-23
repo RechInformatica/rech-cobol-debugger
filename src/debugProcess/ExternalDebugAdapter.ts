@@ -131,21 +131,23 @@ export class ExternalDebugAdapter implements DebugInterface {
 	}
 
 	addBreakpoint(br: CobolBreakpoint): Promise<string> {
-		return this.addBreakpointOnLocation(`${br.line}`, br.source);
+		return this.addBreakpointOnLocation(`${br.line}`, br.source, br.condition);
 	}
 
 	addParagraphBreakpoint(br: CobolParagraphBreakpoint): Promise<string> {
-		return this.addBreakpointOnLocation(br.paragraph, br.source);
+		return this.addBreakpointOnLocation(br.paragraph, br.source, br.condition);
 	}
 
-	private addBreakpointOnLocation(location: string, source: string): Promise<string> {
+	private addBreakpointOnLocation(location: string, source: string, condition?: string): Promise<string> {
 		return new Promise(async (resolve, reject) => {
-			const command = this.buildAddBreakCommand(location, source);
+			const command = this.buildAddBreakCommand(location, source, condition);
 			const expectedRegexes: RegExp[] = [];
 			expectedRegexes.push(this.createNoVerbRegex(source));
 			expectedRegexes.push(this.createSetBreakRegex());
 			expectedRegexes.push(/no\s+such\s+file/);
 			expectedRegexes.push(/no\s+such\s+paragraph/);
+			expectedRegexes.push(/syntax\s+error/i);
+			expectedRegexes.push(/unexpected\s+error\s+usage/i);
 			this.sendCommand(command, expectedRegexes).then((result) => {
 				const regexResult = this.createSetBreakRegex().exec(result);
 				if (regexResult) {
@@ -232,8 +234,8 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return command;
 	}
 
-	private buildAddBreakCommand(location: string, source: string): string {
-		const command = `break ${location} ${this.addQuotesIfNeeded(source)}`;
+	private buildAddBreakCommand(location: string, source: string, condition?: string): string {
+		const command = `break ${location} ${this.addQuotesIfNeeded(source)} ${this.buildConditionIfNeeded(condition)}`;
 		return command;
 	}
 
@@ -247,6 +249,18 @@ export class ExternalDebugAdapter implements DebugInterface {
 			return "";
 		}
 		return `\"${source}\"`;
+	}
+
+	/**
+	 * Builds the condition clause for the specified breakpoint, if needed.
+	 *
+	 * @param condition
+	 */
+	private buildConditionIfNeeded(condition?: string): string {
+		if (condition && condition.length > 0) {
+			return `when ${condition}`;
+		}
+		return "";
 	}
 
 	private createBreakClearedRegex(breakpoint: CobolBreakpoint): RegExp {
