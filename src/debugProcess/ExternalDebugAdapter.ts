@@ -55,6 +55,14 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return this.sendDebugPositionCommand("outpar");
 	}
 
+	stepOutProgram(): Promise<DebugPosition> {
+		return this.sendDebugPositionCommand("outprog");
+	}
+
+	runToNextProgram(): Promise<DebugPosition> {
+		return this.sendDebugPositionCommand("prog");
+	}
+
 	continue(): Promise<DebugPosition> {
 		return this.sendDebugPositionCommand("continue");
 	}

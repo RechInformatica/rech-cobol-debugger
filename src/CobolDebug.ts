@@ -18,6 +18,10 @@ import { DebuggerReplManager } from './DebuggerReplManager';
 import { window } from 'vscode';
 
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
+/** Custom comand indicating to step out of the current program */
+export const CUSTOM_COMMAND_STEP_OUT_PROGRAM = "stepOutProgram";
+/** Custom comand indicating to run to the next program */
+export const CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM = "runToNextProgram";
 
 export class CobolDebugSession extends DebugSession {
 
@@ -255,6 +259,32 @@ export class CobolDebugSession extends DebugSession {
 		}).catch(() => {
 			this.fireTerminateDebugEvent(response);
 		});
+	}
+
+	protected customRequest(command: string, response: DebugProtocol.Response, _args: any): void {
+		if (!this.debugRuntime || this.running) {
+			return this.sendResponse(response);
+		}
+		switch (command) {
+			case CUSTOM_COMMAND_STEP_OUT_PROGRAM:
+				this.fireContinuedEvent();
+				this.debugRuntime.stepOutProgram().then((position) => {
+					this.fireDebugLineChangedEvent(position, "stopOnStep", response);
+				}).catch(() => {
+					this.fireTerminateDebugEvent(response);
+				});
+				break;
+			case CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM:
+				this.fireContinuedEvent();
+				this.debugRuntime.runToNextProgram().then((position) => {
+					this.fireDebugLineChangedEvent(position, "stopOnStep", response);
+				}).catch(() => {
+					this.fireTerminateDebugEvent(response);
+				});
+				break;
+			default:
+				return this.sendResponse(response);
+		}
 	}
 
 	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments, _request?: DebugProtocol.Request): void {

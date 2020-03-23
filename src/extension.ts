@@ -5,33 +5,28 @@ import { CobolConfigurationProvider } from './CobolConfigurationProvider';
 import { CobolDebugAdapterDescriptorFactory } from './CobolDebugAdapterDescriptorFactory';
 import { Configuration } from './helper/Configuration';
 import { CobolEvaluatableExpressionProvider } from './debugProcess/CobolEvaluatableExpressionProvider';
+import { CUSTOM_COMMAND_STEP_OUT_PROGRAM, CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM } from './CobolDebug';
 
 /** Default selections of input boxes typed by user */
 const DEFAULT_SELECTIONS: Map<string, string> = new Map<string, string>();
 
 export function activate(context: ExtensionContext) {
 
-	const configuration = new Configuration("rech.cobol.debug")
-
-	context.subscriptions.push(commands.registerCommand('extension.cobol-debug.startDebugger', _config => {
-		return new Promise<string>(async (resolve) => {
-			const questions = configuration.get<string[]>("params");
-			let commandLine = configuration.get<string>("commandline");
-			for (let i = 0; i < questions.length; i++) {
-				const question = questions[i];
-				const defaultValue = DEFAULT_SELECTIONS.get(question);
-				const token = `$${i + 1}`;
-				let response = await askParameter(question, defaultValue);
-				if (!response) {
-					response = "";
-				}
-				DEFAULT_SELECTIONS.set(question, response);
-				commandLine = commandLine.replace(token, response);
-			}
-			commandLine = commandLine.trim();
-			return resolve(commandLine);
-		});
+	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.startDebugger', () => {
+		return askAllParameters();
 	}));
+	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.stepOutProgram', () => {
+		if (debug.activeDebugSession) {
+			debug.activeDebugSession.customRequest(CUSTOM_COMMAND_STEP_OUT_PROGRAM);
+		}
+	}));
+	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.runToNextProgram', () => {
+		if (debug.activeDebugSession) {
+			debug.activeDebugSession.customRequest(CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM);
+		}
+	}));
+
+
 
 	// register a configuration provider for 'COBOL' debug type
 	const provider = new CobolConfigurationProvider();
@@ -49,9 +44,30 @@ export function activate(context: ExtensionContext) {
 
 }
 
+function askAllParameters(): Promise<string> {
+	return new Promise<string>(async (resolve) => {
+		const configuration = new Configuration("rech.cobol.debug")
+		const questions = configuration.get<string[]>("params");
+		let commandLine = configuration.get<string>("commandline");
+		for (let i = 0; i < questions.length; i++) {
+			const question = questions[i];
+			const defaultValue = DEFAULT_SELECTIONS.get(question);
+			const token = `$${i + 1}`;
+			let response = await askParameter(question, defaultValue);
+			if (!response) {
+				response = "";
+			}
+			DEFAULT_SELECTIONS.set(question, response);
+			commandLine = commandLine.replace(token, response);
+		}
+		commandLine = commandLine.trim();
+		return resolve(commandLine);
+	});
+}
+
 function askParameter(question: string, defaultValue: string | undefined): Thenable<string | undefined> {
 	return new Promise((resolve, reject) => {
-		window.showInputBox({value: defaultValue, prompt: question, ignoreFocusOut: true}).then((response) => {
+		window.showInputBox({ value: defaultValue, prompt: question, ignoreFocusOut: true }).then((response) => {
 			resolve(response);
 		}, (e) => reject(e));
 	});

@@ -25,6 +25,16 @@ export interface DebugInterface {
 	stepOut(): Promise<DebugPosition>;
 
 	/**
+	 * Steps out of the current program
+	 */
+	stepOutProgram(): Promise<DebugPosition>;
+
+	/**
+	 * Runs to the next program
+	 */
+	runToNextProgram(): Promise<DebugPosition>;
+
+	/**
 	 * Steps to the next sentence without debugging inside the context
 	 */
 	next(): Promise<DebugPosition>;
