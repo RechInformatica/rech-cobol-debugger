@@ -1,78 +1,116 @@
 'use strict';
 
-import { ExtensionContext, commands, window, debug, DebugAdapterDescriptorFactory, languages, TextDocument, Position, ProviderResult, EvaluatableExpression, Range } from 'vscode';
-import { CobolConfigurationProvider } from './CobolConfigurationProvider';
-import { CobolDebugAdapterDescriptorFactory } from './CobolDebugAdapterDescriptorFactory';
-import { Configuration } from './helper/Configuration';
-import { CobolEvaluatableExpressionProvider } from './debugProcess/CobolEvaluatableExpressionProvider';
+import { ExtensionContext, commands, debug, DebugAdapterDescriptorFactory, languages, window } from 'vscode';
+import { CobolConfigurationProvider } from './provider/CobolConfigurationProvider';
+import { CobolDebugAdapterDescriptorFactory } from './provider/CobolDebugAdapterDescriptorFactory';
+import { CobolEvaluatableExpressionProvider } from './provider/CobolEvaluatableExpressionProvider';
 import { CUSTOM_COMMAND_STEP_OUT_PROGRAM, CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM } from './CobolDebug';
-
-/** Default selections of input boxes typed by user */
-const DEFAULT_SELECTIONS: Map<string, string> = new Map<string, string>();
+import { CobolDebugSetup } from './CobolDebuggerSetup';
+import { CobolMonitorController } from './monitor/CobolMonitorController';
 
 export function activate(context: ExtensionContext) {
 
+    // Creates a controller to manage COBOL monitors
+	const monitorController = new CobolMonitorController();
+
+	// Extension commands
 	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.startDebugger', () => {
 		return askAllParameters();
 	}));
 	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.stepOutProgram', () => {
-		if (debug.activeDebugSession) {
-			debug.activeDebugSession.customRequest(CUSTOM_COMMAND_STEP_OUT_PROGRAM);
-		}
+		sendCustomRequest(CUSTOM_COMMAND_STEP_OUT_PROGRAM);
 	}));
 	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.runToNextProgram', () => {
-		if (debug.activeDebugSession) {
-			debug.activeDebugSession.customRequest(CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM);
-		}
+		sendCustomRequest(CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM);
+	}));
+	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.addCobolMonitor', () => {
+		return addCobolMonitor(monitorController);
+	}));
+	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.removeCobolMonitor', (textId: string) => {
+		removeCobolMonitor(textId, monitorController);
 	}));
 
+	// Register remaining providers
+	setupExtensionProviders(context);
+}
 
+/**
+ * Asks user for debugging parameters before execution starts
+ */
+function askAllParameters(): Promise<string> {
+	return new CobolDebugSetup().askAllParameters();
+}
 
-	// register a configuration provider for 'COBOL' debug type
+/**
+ * Asks user for a new COBOL monitor
+ */
+function addCobolMonitor(controller: CobolMonitorController): Promise<void> {
+	return controller.addCobolMonitor();
+}
+
+/**
+ * Removes a COBOL monitor with the specified ID
+ */
+function removeCobolMonitor(textId: string, controller: CobolMonitorController): void {
+	const id = +textId;
+	controller.removeCobolMonitor(id);
+}
+
+/**
+ * Sends a custom request do COBOL debug adapter
+ *
+ * @param command command to be sent in request
+ */
+function sendCustomRequest(command: string): void {
+	if (debug.activeDebugSession) {
+		debug.activeDebugSession.customRequest(command);
+	}
+}
+
+/**
+ * Setup needed providers for COBOL debug adapter.
+ *
+ * @param context extension context where providers will be registered.
+ */
+function setupExtensionProviders(context: ExtensionContext): void {
+	registerConfigurationProvider(context);
+	registerDescriptorFactory(context);
+	registerExpressionProvider();
+}
+
+/**
+ * Register a configuration provider for 'COBOL' debug type
+ *
+ * @param context extension context where providers will be registered.
+ */
+function registerConfigurationProvider(context: ExtensionContext): void {
 	const provider = new CobolConfigurationProvider();
 	context.subscriptions.push(debug.registerDebugConfigurationProvider('COBOL', provider));
+}
 
-	// register an adapter factory for 'COBOL' debug type
+/**
+ * Register an adapter factory for 'COBOL' debug type
+ *
+ * @param context extension context where providers will be registered.
+ */
+function registerDescriptorFactory(context: ExtensionContext): void {
 	const factory: DebugAdapterDescriptorFactory = new CobolDebugAdapterDescriptorFactory();
 	context.subscriptions.push(debug.registerDebugAdapterDescriptorFactory('COBOL', factory));
 	if ('dispose' in factory) {
 		context.subscriptions.push(factory);
 	}
+}
 
-	// override VS Code's default implementation of the debug hover
+/**
+ * Override VS Code's default implementation of the debug hover
+ */
+function registerExpressionProvider(): void {
 	languages.registerEvaluatableExpressionProvider('COBOL', new CobolEvaluatableExpressionProvider());
-
 }
 
-function askAllParameters(): Promise<string> {
-	return new Promise<string>(async (resolve) => {
-		const configuration = new Configuration("rech.cobol.debug")
-		const questions = configuration.get<string[]>("params");
-		let commandLine = configuration.get<string>("commandline");
-		for (let i = 0; i < questions.length; i++) {
-			const question = questions[i];
-			const defaultValue = DEFAULT_SELECTIONS.get(question);
-			const token = `$${i + 1}`;
-			let response = await askParameter(question, defaultValue);
-			if (!response) {
-				response = "";
-			}
-			DEFAULT_SELECTIONS.set(question, response);
-			commandLine = commandLine.replace(token, response);
-		}
-		commandLine = commandLine.trim();
-		return resolve(commandLine);
-	});
-}
-
-function askParameter(question: string, defaultValue: string | undefined): Thenable<string | undefined> {
-	return new Promise((resolve, reject) => {
-		window.showInputBox({ value: defaultValue, prompt: question, ignoreFocusOut: true }).then((response) => {
-			resolve(response);
-		}, (e) => reject(e));
-	});
-}
-
+/**
+ * Deactivates the extension
+ */
 export function deactivate() {
 	// nothing to do
 }

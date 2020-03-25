@@ -1,7 +1,7 @@
 import { DebugInterface } from "./debugProcess/DebugInterface";
-import { CobolBreakpoint } from "./debugProcess/CobolBreakpoint";
+import { CobolBreakpoint } from "./breakpoint/CobolBreakpoint";
 import { debug, Uri, Position, Location, SourceBreakpoint } from 'vscode';
-import { CobolParagraphBreakpoint } from "./debugProcess/CobolParagraphBreakpoint";
+import { CobolParagraphBreakpoint } from "./breakpoint/CobolParagraphBreakpoint";
 
 /** Breakpoint commands for debug console */
 const DEBUGGER_BREAK_COMMANDS = ["br"];

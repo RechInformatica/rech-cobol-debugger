@@ -26,7 +26,7 @@ export class StepParser {
 	 * Creates a regular expression to extract debug position from debugger output
 	 */
 	public createDebugPositionRegex(): RegExp {
-		return /line=(\d+)\s+file=([\w\.:\\\/ ]+)/i;
+		return /^\+*\s+line=(\d+)\s+file=([\w\.:\\\/ ]+)/im;
 	}
 
 }

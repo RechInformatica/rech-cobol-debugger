@@ -151,11 +151,4 @@ export class VariableParser {
 		})
 	}
 
-	/**
-	 * Creates a RegEx to parse variable output from external debugger output
-	 */
-	public static createVariableValueRegex(): RegExp {
-		return /[\w\(\)\: ]+\s*=[ ](.*)/i;
-	}
-
 }

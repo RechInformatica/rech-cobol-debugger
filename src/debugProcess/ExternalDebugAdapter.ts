@@ -1,11 +1,11 @@
 import { DebugInterface } from "./DebugInterface";
 import { DebugPosition } from "./DebugPosition";
 import { StepParser } from "../parser/StepParser";
-import { VariableParser } from "../parser/VariableParser";
-import { CobolBreakpoint } from "./CobolBreakpoint";
+import { CobolBreakpoint } from "../breakpoint/CobolBreakpoint";
 import { SyncProcess } from "./SyncProcess";
 import { debug } from "vscode";
-import { CobolParagraphBreakpoint } from "./CobolParagraphBreakpoint";
+import { CobolParagraphBreakpoint } from "../breakpoint/CobolParagraphBreakpoint";
+import { CobolMonitor } from "../monitor/CobolMonitor";
 
 /** Index where filename can be found on regular expression of breakpoint commands */
 const FILENAME_BREAKPOINT_CMD_OUTPUT = 3;
@@ -79,16 +79,6 @@ export class ExternalDebugAdapter implements DebugInterface {
 		this.debugProcess.writeComanndToProcessInput("exit");
 	}
 
-	/**
-	 * Captures variable information considering extra COBOL parameters.
-	 * Some of these parameteres are to retrieve value in hexadecimal format or show variable children.
-	 *
-	 * For example:
-	 *       '-x <my-var>' -> shows hexadecimal value
-	 *    '-tree <my-var>' -> shows variable with children
-	 *
-	 * @param args variable with optional COBOL 'display' parameters
-	 */
 	requestVariableValue(args: string): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			const command = `display ${args}`;
@@ -96,7 +86,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 				return reject("Empty variable name");
 			}
 			const possibleOutputResults: RegExp[] = [];
-			possibleOutputResults.push(VariableParser.createVariableValueRegex());
+			possibleOutputResults.push(this.createVariableValueRegex());
 			possibleOutputResults.push(this.createVariableNotFoundRegex());
 			possibleOutputResults.push(this.createNotVariableOutputRegex());
 			possibleOutputResults.push(/Error\:\s+subscript\s+required\s+/i);
@@ -104,9 +94,9 @@ export class ExternalDebugAdapter implements DebugInterface {
 			possibleOutputResults.push(/property\s+required/i);
 			possibleOutputResults.push(/Error:\s+ambiguous\s+identifier/i);
 			possibleOutputResults.push(/unexpected\s+error\s+usage/i);
-			possibleOutputResults.push(/syntax\s+error/i);
+			possibleOutputResults.push(this.createSyntaxErrorRegex());
 			this.sendCommand(command, possibleOutputResults).then((result) => {
-				const value = VariableParser.createVariableValueRegex().exec(result);
+				const value = this.createVariableValueRegex().exec(result);
 				if (value && value[1]) {
 					return resolve(value[1])
 				} else {
@@ -138,6 +128,45 @@ export class ExternalDebugAdapter implements DebugInterface {
 		});
 	}
 
+	addMonitor(monitor: CobolMonitor): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			const command = "monitor -e " + monitor.variable + " when " + monitor.condition;
+			const possibleOutputResults: RegExp[] = [];
+			possibleOutputResults.push(this.createAddMonitorRegex());
+			possibleOutputResults.push(this.createVariableNotFoundRegex());
+			possibleOutputResults.push(this.createSyntaxErrorRegex());
+			possibleOutputResults.push(/unexpected\s+error\s+usage/i);
+			this.sendCommand(command, possibleOutputResults).then((output) => {
+				if (this.createAddMonitorRegex().test(output)) {
+					return resolve(true);
+				} else {
+					return resolve(false);
+				}
+			}).catch((e) => {
+				return reject(e);
+			})
+		});
+	}
+
+	removeMonitor(variable: string): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			const command = "unmonitor " + variable;
+			const possibleOutputResults: RegExp[] = [];
+			possibleOutputResults.push(this.createClearMonitorRegex());
+			possibleOutputResults.push(/not\s+found\s+monitor\s+/i);
+			possibleOutputResults.push(/unexpected\s+error\s+usage/i);
+			this.sendCommand(command, possibleOutputResults).then((output) => {
+				if (this.createClearMonitorRegex().test(output)) {
+					return resolve(true);
+				} else {
+					return resolve(false);
+				}
+			}).catch((e) => {
+				return reject(e);
+			})
+		});
+	}
+
 	addBreakpoint(br: CobolBreakpoint): Promise<string> {
 		return this.addBreakpointOnLocation(`${br.line}`, br.source, br.condition);
 	}
@@ -154,7 +183,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 			expectedRegexes.push(this.createSetBreakRegex());
 			expectedRegexes.push(/no\s+such\s+file/);
 			expectedRegexes.push(/no\s+such\s+paragraph/);
-			expectedRegexes.push(/syntax\s+error/i);
+			expectedRegexes.push(this.createSyntaxErrorRegex());
 			expectedRegexes.push(/unexpected\s+error\s+usage/i);
 			this.sendCommand(command, expectedRegexes).then((result) => {
 				const regexResult = this.createSetBreakRegex().exec(result);
@@ -221,6 +250,21 @@ export class ExternalDebugAdapter implements DebugInterface {
 	}
 
 	/**
+	 * Creates a RegEx to parse variable output from external debugger output
+	 */
+	private createVariableValueRegex(): RegExp {
+		return /[\w\(\)\: ]+\s*=[ ](.*)/i;
+	}
+
+	/**
+	 * Creates a RegEx to parse clear monitor output indicating that the monitor
+	 * has been successfully cleared.
+	 */
+	private createClearMonitorRegex(): RegExp {
+		return /clear\s+monitor\s+on/i;
+	}
+
+	/**
 	 * Crates a regular expression to detect output indicating that value has been correctly changed
 	 *
 	 * @param variable  variable name
@@ -271,6 +315,13 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return "";
 	}
 
+	/**
+	 * Creates and returns a regular expression indicating syntax error
+	 */
+	private createSyntaxErrorRegex(): RegExp {
+		return /syntax\s+error/i;
+	}
+
 	private createBreakClearedRegex(breakpoint: CobolBreakpoint): RegExp {
 		const regexText = `clear\\sbreakpoint\\sat\\sline\\s${breakpoint.line}\\,\\sfile\\s${breakpoint.source}`;
 		return new RegExp(regexText, "i");
@@ -290,12 +341,15 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return /set\sbreakpoint\s(at|in)\s(line|paragraph)\s.*\,\sfile\s([\w\.:\\\/ ]+)/i;
 	}
 
+	private createAddMonitorRegex(): RegExp {
+		return /add\s+monitor\s+on\s+/i;
+	}
+
 	/**
 	 * Creates a regular expression to parse debugger output and check if variable exists or not
 	 */
 	private createVariableNotFoundRegex(): RegExp {
-		const regexText = `data-item\\s+not\\s+found\\s+`;
-		return new RegExp(regexText, "i");
+		return /data-item\s+not\s+found\s+/i;
 	}
 
 	/**

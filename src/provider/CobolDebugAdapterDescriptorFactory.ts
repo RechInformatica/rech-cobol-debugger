@@ -1,5 +1,5 @@
 import { DebugAdapterDescriptorFactory, DebugSession, DebugAdapterExecutable, ProviderResult, DebugAdapterDescriptor, DebugAdapterServer } from "vscode";
-import { CobolDebugSession } from "./CobolDebug";
+import { CobolDebugSession } from "../CobolDebug";
 import { Server, createServer, AddressInfo } from "net";
 
 export class CobolDebugAdapterDescriptorFactory implements DebugAdapterDescriptorFactory {

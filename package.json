@@ -77,6 +77,30 @@
 				"configuration": "./cobol.configuration.json"
 			}
 		],
+		"views": {
+			"debug": [
+				{
+					"id": "cobolMonitorView",
+					"name": "COBOL Monitors"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "rech.cobol.debug.addCobolMonitor",
+					"when": "view == cobolMonitorView",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "rech.cobol.debug.removeCobolMonitor",
+					"when": "view == cobolMonitorView",
+					"group": "inline"
+				}
+			]
+		},
 		"configuration": {
 			"type": "object",
 			"title": "Rech COBOL debug configurations",
@@ -109,25 +133,35 @@
 		"commands": [
 			{
 				"command": "rech.cobol.debug.stepOutProgram",
-				"title": "Rech COBOL Debugger: Step out program",
-				"enablement": ""
+				"title": "Rech COBOL Debugger: Step out program"
 			},
 			{
 				"command": "rech.cobol.debug.runToNextProgram",
 				"title": "Rech COBOL Debugger: Run to the next program"
+			},
+			{
+				"command": "rech.cobol.debug.addCobolMonitor",
+				"title": "Rech COBOL Debugger: Add COBOL monitor",
+				"icon": "$(add)"
+			},
+			{
+				"command": "rech.cobol.debug.removeCobolMonitor",
+				"title": "Rech COBOL Debugger: Remove COBOL monitor",
+				"icon": "$(trash)",
+				"enablement": "view == cobolMonitorView"
 			}
 		],
-        "keybindings": [
-            {
-                "command": "rech.cobol.debug.stepOutProgram",
+		"keybindings": [
+			{
+				"command": "rech.cobol.debug.stepOutProgram",
 				"key": "ctrl+shift+f11",
 				"when": "inDebugMode"
-            },
-            {
-                "command": "rech.cobol.debug.runToNextProgram",
-                "key": "alt+f9",
+			},
+			{
+				"command": "rech.cobol.debug.runToNextProgram",
+				"key": "alt+f9",
 				"when": "inDebugMode"
-            }
+			}
 		],
 		"debuggers": [
 			{

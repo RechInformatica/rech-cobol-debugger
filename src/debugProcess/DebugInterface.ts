@@ -1,6 +1,7 @@
 import { DebugPosition } from "./DebugPosition";
-import { CobolBreakpoint } from "./CobolBreakpoint";
-import { CobolParagraphBreakpoint } from "./CobolParagraphBreakpoint";
+import { CobolBreakpoint } from "../breakpoint/CobolBreakpoint";
+import { CobolParagraphBreakpoint } from "../breakpoint/CobolParagraphBreakpoint";
+import { CobolMonitor } from "../monitor/CobolMonitor";
 
 export interface DebugInterface {
 
@@ -55,9 +56,14 @@ export interface DebugInterface {
 	continue(): Promise<DebugPosition>;
 
 	/**
-	 * Requests variable value
+	 * Captures variable information considering extra COBOL parameters.
+	 * Some of these parameteres are to retrieve value in hexadecimal format or show variable children.
 	 *
-	 * @param variable variable name
+	 * For example:
+	 *       '-x <my-var>' -> shows hexadecimal value
+	 *    '-tree <my-var>' -> shows variable with children
+	 *
+	 * @param args variable with optional COBOL 'display' parameters
 	 */
 	requestVariableValue(variable: string): Promise<string>;
 
@@ -68,6 +74,17 @@ export interface DebugInterface {
 	 * @param newValue new value of the specified variable
 	 */
 	changeVariableValue(variable: string, newValue: string): Promise<boolean>;
+
+	/**
+	 * Adds a monitor to stop debugging when the
+	 * specified condicion is met.
+	 */
+	addMonitor(monitor: CobolMonitor): Promise<boolean>;
+
+	/**
+	 * Removes the monitor for the specified variable
+	 */
+	removeMonitor(variable: string): Promise<boolean>;
 
 	/**
 	 * Adds a Breakpoint

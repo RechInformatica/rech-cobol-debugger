@@ -2,7 +2,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugInterface } from "../debugProcess/DebugInterface";
 import { window } from 'vscode';
 import Q from 'q';
-import { CobolBreakpoint } from '../debugProcess/CobolBreakpoint';
+import { CobolBreakpoint } from './CobolBreakpoint';
 import { SourceUtils } from './SourceUtils';
 
 

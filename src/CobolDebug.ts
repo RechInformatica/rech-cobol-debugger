@@ -22,6 +22,10 @@ const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
 export const CUSTOM_COMMAND_STEP_OUT_PROGRAM = "stepOutProgram";
 /** Custom comand indicating to run to the next program */
 export const CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM = "runToNextProgram";
+/** Custom comand indicating to add a COBOL Monitor */
+export const CUSTOM_COMMAND_ADD_MONITOR = "addMonitor";
+/** Custom comand indicating to remove a COBOL Monitor */
+export const CUSTOM_COMMAND_REMOVE_MONITOR = "removeMonitor";
 
 export class CobolDebugSession extends DebugSession {
 
@@ -261,63 +265,144 @@ export class CobolDebugSession extends DebugSession {
 		});
 	}
 
-	protected customRequest(command: string, response: DebugProtocol.Response, _args: any): void {
-		if (!this.debugRuntime || this.running) {
+	protected customRequest(command: string, response: DebugProtocol.Response, args: any): void {
+		if (this.running) {
 			return this.sendResponse(response);
 		}
 		switch (command) {
 			case CUSTOM_COMMAND_STEP_OUT_PROGRAM:
-				this.fireContinuedEvent();
-				this.debugRuntime.stepOutProgram().then((position) => {
-					this.fireDebugLineChangedEvent(position, "stopOnStep", response);
-				}).catch(() => {
-					this.fireTerminateDebugEvent(response);
-				});
+				this.stepOutProgramRequest(response);
 				break;
 			case CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM:
-				this.fireContinuedEvent();
-				this.debugRuntime.runToNextProgram().then((position) => {
-					this.fireDebugLineChangedEvent(position, "stopOnStep", response);
-				}).catch(() => {
-					this.fireTerminateDebugEvent(response);
-				});
+				this.runToNextProgramRequest(response);
+				break;
+			case CUSTOM_COMMAND_ADD_MONITOR:
+				this.addMonitorRequest(response, args);
+				break;
+			case CUSTOM_COMMAND_REMOVE_MONITOR:
+				this.removeMonitorRequest(response, args);
 				break;
 			default:
 				return this.sendResponse(response);
 		}
 	}
 
-	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments, _request?: DebugProtocol.Request): void {
+	/**
+	 * Request to step out of the current COBOL program
+	 */
+	private stepOutProgramRequest(response: DebugProtocol.Response): void {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
+		this.fireContinuedEvent();
+		this.debugRuntime.stepOutProgram().then((position) => {
+			this.fireDebugLineChangedEvent(position, "stopOnStep", response);
+		}).catch(() => {
+			this.fireTerminateDebugEvent(response);
+		});
+	}
+
+	/**
+	 * Request to run to the next COBOL program
+	 */
+	private runToNextProgramRequest(response: DebugProtocol.Response): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		this.fireContinuedEvent();
+		this.debugRuntime.runToNextProgram().then((position) => {
+			this.fireDebugLineChangedEvent(position, "stopOnStep", response);
+		}).catch(() => {
+			this.fireTerminateDebugEvent(response);
+		});
+	}
+
+	/**
+	 * Request to add a COBOL monitor on external debugger
+	 */
+	private addMonitorRequest(response: DebugProtocol.Response, args: any): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		this.debugRuntime.addMonitor(args).then((success) => {
+			this.sendBooleanResponse(response, success);
+		}).catch(() =>{
+			this.sendBooleanResponse(response, false);
+		});
+	}
+
+	/**
+	 * Request to remove a COBOL monitor on external debugger
+	 */
+	private removeMonitorRequest(response: DebugProtocol.Response, args: any): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		this.debugRuntime.removeMonitor(args).then((success) => {
+			this.sendBooleanResponse(response, success);
+		}).catch(() =>{
+			this.sendBooleanResponse(response, false);
+		});
+	}
+
+	/**
+	 * Sends a boolean response representing the result of the current custom request
+	 */
+	private sendBooleanResponse(response: DebugProtocol.Response, success: boolean): void {
+		response.body = {};
+		response.body.success = success;
+		this.sendResponse(response);
+	}
+
+	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments, _request?: DebugProtocol.Request): void {
 		switch (args.context) {
 			case 'hover':
-				new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
-					this.sendVariableValueResponse(variable, response);
-				}).catch(() => {
-					// On hover does not set result when value is not found so hint is not shown in UI
-					this.sendResponse(response);
-				});
+				this.hoverRequest(response, args);
 				break;
 			case 'watch':
-				new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
-					this.sendVariableValueResponse(variable, response);
-				}).catch(() => {
-					// This is needed because otherwise VSCode would show the last successful watch result, which might be
-					// outdated
-					response.body = {
-						result: "<Invalid watch expression>",
-						variablesReference: 0
-					};
-					this.sendResponse(response);
-				});
+				this.watchRequest(response, args);
 				break;
 			case 'repl':
-				new DebuggerReplManager(this.debugRuntime).handleCommand(args.expression);
-				this.sendResponse(response);
+				this.replRequest(response, args);
 				break;
 		}
+	}
+
+	private hoverRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
+			this.sendVariableValueResponse(variable, response);
+		}).catch(() => {
+			// On hover does not set result when value is not found so hint is not shown in UI
+			this.sendResponse(response);
+		});
+	}
+
+	private watchRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
+			this.sendVariableValueResponse(variable, response);
+		}).catch(() => {
+			// This is needed because otherwise VSCode would show the last successful watch result, which might be
+			// outdated
+			response.body = {
+				result: "<Invalid watch expression>",
+				variablesReference: 0
+			};
+			this.sendResponse(response);
+		});
+	}
+
+	private replRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		new DebuggerReplManager(this.debugRuntime).handleCommand(args.expression);
+		this.sendResponse(response);
 	}
 
 	private sendVariableValueResponse(variable: DebugProtocol.Variable, response: DebugProtocol.EvaluateResponse): void {
