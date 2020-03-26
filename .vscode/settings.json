@@ -3,5 +3,10 @@
 	"javascript.validate.enable": false,
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"files.trimTrailingWhitespace": true,
-	"editor.insertSpaces": false
+	"editor.insertSpaces": false,
+	"workbench.colorCustomizations": {
+		"activityBar.background": "#0D3333",
+		"titleBar.activeBackground": "#124748",
+		"titleBar.activeForeground": "#F5FCFC"
+	}
 }

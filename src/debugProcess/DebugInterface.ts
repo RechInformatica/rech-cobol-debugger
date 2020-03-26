@@ -65,7 +65,7 @@ export interface DebugInterface {
 	 *
 	 * @param args variable with optional COBOL 'display' parameters
 	 */
-	requestVariableValue(variable: string): Promise<string>;
+	requestVariableValue(variable: string): Promise<string | undefined>;
 
 	/**
 	 * Changes variable value

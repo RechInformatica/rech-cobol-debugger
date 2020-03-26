@@ -139,12 +139,16 @@ export class VariableParser {
 	public captureVariableInfo(variableName: string): Promise<DebugProtocol.Variable> {
 		return new Promise((resolve, reject) => {
 			this.debugRuntime.requestVariableValue(variableName).then((variableValue) => {
-				return resolve({
-					name: variableName,
-					value: variableValue,
-					variablesReference: 0,
-					evaluateName: variableName
-				});
+				if (variableValue) {
+					return resolve({
+						name: variableName,
+						value: variableValue,
+						variablesReference: 0,
+						evaluateName: variableName
+					});
+				} else {
+					return reject("Invalid variable name: " + variableName);
+				}
 			}).catch((e) => {
 				reject(e);
 			})
