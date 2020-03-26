@@ -10,7 +10,7 @@ import { CobolMonitorController } from './monitor/CobolMonitorController';
 
 export function activate(context: ExtensionContext) {
 
-    // Creates a controller to manage COBOL monitors
+	// Creates a controller to manage COBOL monitors
 	const monitorController = new CobolMonitorController();
 
 	// Extension commands
@@ -29,9 +29,12 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.removeCobolMonitor', (textId: string) => {
 		removeCobolMonitor(textId, monitorController);
 	}));
+	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.removeAllCobolMonitors', () => {
+		removeAllCobolMonitors(monitorController);
+	}));
 
 	// Register remaining providers
-	setupExtensionProviders(context);
+	setupExtensionProviders(context, monitorController);
 }
 
 /**
@@ -57,6 +60,13 @@ function removeCobolMonitor(textId: string, controller: CobolMonitorController):
 }
 
 /**
+ * Removes all existing COBOL Monitors
+ */
+function removeAllCobolMonitors(controller: CobolMonitorController): void {
+	controller.removeAllCobolMonitors();
+}
+
+/**
  * Sends a custom request do COBOL debug adapter
  *
  * @param command command to be sent in request
@@ -72,9 +82,9 @@ function sendCustomRequest(command: string): void {
  *
  * @param context extension context where providers will be registered.
  */
-function setupExtensionProviders(context: ExtensionContext): void {
+function setupExtensionProviders(context: ExtensionContext, controller: CobolMonitorController): void {
 	registerConfigurationProvider(context);
-	registerDescriptorFactory(context);
+	registerDescriptorFactory(context, controller);
 	registerExpressionProvider();
 }
 
@@ -93,8 +103,8 @@ function registerConfigurationProvider(context: ExtensionContext): void {
  *
  * @param context extension context where providers will be registered.
  */
-function registerDescriptorFactory(context: ExtensionContext): void {
-	const factory: DebugAdapterDescriptorFactory = new CobolDebugAdapterDescriptorFactory();
+function registerDescriptorFactory(context: ExtensionContext, controller: CobolMonitorController): void {
+	const factory: DebugAdapterDescriptorFactory = new CobolDebugAdapterDescriptorFactory(controller);
 	context.subscriptions.push(debug.registerDebugAdapterDescriptorFactory('COBOL', factory));
 	if ('dispose' in factory) {
 		context.subscriptions.push(factory);

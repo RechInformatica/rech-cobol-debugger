@@ -32,6 +32,13 @@ export class CobolMonitorController {
 	}
 
 	/**
+	 * Returns an array with every existing COBOL monitor
+	 */
+	public getAllCobolMonitors(): CobolMonitor[] {
+		return this.model.getAllCobolMonitors();
+	}
+
+	/**
 	 * Adds a new COBOL Monitor
 	 */
 	public async addCobolMonitor(): Promise<void> {
@@ -52,6 +59,20 @@ export class CobolMonitorController {
 		this.model.removeCobolMonitor(id)
 			.then(() => this.view.refresh())
 			.catch(() => this.view.showUnexpectedErrorMessage('Remove monitor'));
+	}
+
+	/**
+	 * Removes all existing COBOL Monitors
+	 */
+	public removeAllCobolMonitors(): void {
+		this.model.removeAllCobolMonitors()
+			.then(() => this.view.refresh())
+			.catch(() => {
+				// Updates the view even if a problem has happened, because maybe some monitors
+				// could be removed and just others couldn't
+				this.view.refresh()
+				this.view.showUnexpectedErrorMessage('Remove all monitors');
+			});
 	}
 
 }

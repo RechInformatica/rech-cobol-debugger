@@ -2,7 +2,7 @@
 	"name": "rech-cobol-debugger",
 	"displayName": "Rech COBOL Debugger",
 	"description": "Debug COBOL files with Visual Studio Code",
-	"version": "1.0.23",
+	"version": "1.0.24",
 	"publisher": "rechinformatica",
 	"engines": {
 		"vscode": "^1.43.0"
@@ -50,6 +50,9 @@
 	"activationEvents": [
 		"onLanguage:COBOL",
 		"onCommand:rech.cobol.debug.startDebugger",
+		"onCommand:rech.cobol.debug.addCobolMonitor",
+		"onCommand:rech.cobol.debug.removeCobolMonitor",
+		"onCommand:rech.cobol.debug.removeAllCobolMonitors",
 		"onDebug"
 	],
 	"contributes": {
@@ -89,6 +92,11 @@
 			"view/title": [
 				{
 					"command": "rech.cobol.debug.addCobolMonitor",
+					"when": "view == cobolMonitorView",
+					"group": "navigation"
+				},
+				{
+					"command": "rech.cobol.debug.removeAllCobolMonitors",
 					"when": "view == cobolMonitorView",
 					"group": "navigation"
 				}
@@ -149,6 +157,12 @@
 				"title": "Rech COBOL Debugger: Remove COBOL monitor",
 				"icon": "$(trash)",
 				"enablement": "view == cobolMonitorView"
+			},
+			{
+				"command": "rech.cobol.debug.removeAllCobolMonitors",
+				"title": "Rech COBOL Debugger: Remove all COBOL monitors",
+				"icon": "$(close-all)",
+				"enablement": "view == cobolMonitorView"
 			}
 		],
 		"keybindings": [
@@ -167,7 +181,6 @@
 			{
 				"type": "COBOL",
 				"label": "COBOL debug",
-				"program": "./out/debugAdapter.js",
 				"runtime": "node",
 				"configurationAttributes": {
 					"launch": {

@@ -16,7 +16,10 @@ import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
 import { DebuggerReplManager } from './DebuggerReplManager';
 import { window } from 'vscode';
+import { CobolMonitorController } from './monitor/CobolMonitorController';
+import Q from "q";
 
+/** Scope of current variables */
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
 /** Custom comand indicating to step out of the current program */
 export const CUSTOM_COMMAND_STEP_OUT_PROGRAM = "stepOutProgram";
@@ -47,6 +50,8 @@ export class CobolDebugSession extends DebugSession {
 	private variableHandles = new Handles<string>();
 	/** Class to manage source breakpoints */
 	private breakpointManager: BreakpointManager | undefined;
+	/** Controller for COBOL monitors */
+	private monitorController: CobolMonitorController;
 	/** Indicates wheter the code is running or not */
 	private running: boolean = false;
 
@@ -54,11 +59,12 @@ export class CobolDebugSession extends DebugSession {
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
 	 */
-	public constructor() {
+	public constructor(controller: CobolMonitorController) {
 		super();
 		// this debugger uses zero-based lines and columns
 		this.setDebuggerLinesStartAt1(false);
 		this.setDebuggerColumnsStartAt1(false);
+		this.monitorController = controller;
 		// setup event handlers
 		this.emitter.on('stopOnEntry', () => {
 			this.sendEvent(new StoppedEvent('entry', CobolDebugSession.THREAD_ID));
@@ -112,9 +118,21 @@ export class CobolDebugSession extends DebugSession {
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
 		const commandLine = (<any>args).commandLine;
 		this.debugRuntime = new ExternalDebugAdapter(commandLine);
+		// Setups debugger
 		this.debugRuntime.setup().then(() => {
+			// Gets information about the first line of source code
 			this.debugRuntime!.start().then((position) => {
-				this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
+				// Adds pending monitors on external debugger
+				this.addPendingMonitors().then(() => {
+					// Finally, tells VSCode API/UI to position on first line of source code
+					this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
+				}).catch(() => {
+					// Even though an error happened while adding pending monitors we can
+					// continue debugging. It's not a critical problem that would really
+					// bother user. So, just show a notification and keep going
+					window.showWarningMessage('Not all monitors could be added on external debugger because an unexpected problem happened.')
+					this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
+				})
 			}).catch(() => {
 				this.onProblemStartingDebugger(response);
 			});
@@ -262,6 +280,33 @@ export class CobolDebugSession extends DebugSession {
 			this.sendResponse(response);
 		}).catch(() => {
 			this.fireTerminateDebugEvent(response);
+		});
+	}
+
+	/**
+	 * Add on external debugger pending COBOL monitors, which are currently
+	 * only available at VSCode UI.
+	 */
+	private addPendingMonitors(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			if (!this.debugRuntime) {
+				return reject();
+			}
+			const monitors = this.monitorController.getAllCobolMonitors();
+			const monitorPromises: Promise<boolean>[] = [];
+			for (let i = 0; i < monitors.length; i++) {
+				const m = monitors[i];
+				monitorPromises.push(this.debugRuntime.addMonitor(m));
+			}
+			Q.allSettled(monitorPromises).then((results) => {
+				const anyRejection = results.some(r => r.state == "rejected");
+				if (anyRejection) {
+					return reject();
+				}
+				return resolve();
+			}).catch(() => {
+				return reject();
+			});
 		});
 	}
 

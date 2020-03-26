@@ -2,6 +2,8 @@ import { CobolMonitorController } from "./CobolMonitorController";
 import { TreeDataProvider, TreeItem, EventEmitter, Event, ProviderResult, window } from "vscode";
 import { CobolMonitor } from "./CobolMonitor";
 
+const CONDITION_ALWAYS = 'always';
+
 export class CobolMonitorView implements TreeDataProvider<number> {
 
 	/** Helper objects to refresh UI when a new monitor is added */
@@ -28,10 +30,7 @@ export class CobolMonitorView implements TreeDataProvider<number> {
 		if (!variableName) {
 			return undefined;
 		}
-		const condition = await window.showQuickPick(['always', '=', '!=', '<', '>', '<=', '>='], {
-			placeHolder: 'Condition to stop debugger',
-			ignoreFocusOut: true
-		});
+		const condition = await this.askUserForCondition();
 		if (!condition) {
 			return undefined;
 		}
@@ -39,6 +38,31 @@ export class CobolMonitorView implements TreeDataProvider<number> {
 			variable: variableName,
 			condition: condition
 		};
+	}
+
+	/**
+	 * Asks user for monitor condition
+	 */
+	private async askUserForCondition(): Promise<string | undefined> {
+		const condition = await window.showQuickPick([CONDITION_ALWAYS, '=', '!=', '<', '>', '<=', '>='], {
+			placeHolder: 'Condition to stop debugger',
+			ignoreFocusOut: true
+		});
+		if (!condition) {
+			return undefined;
+		}
+		if (condition !== CONDITION_ALWAYS) {
+			const contentForComparison = await window.showInputBox({
+				placeHolder: 'Content for comparison',
+				prompt: 'Please specify the content for comparison which will make debugger stops.',
+				ignoreFocusOut: true
+			});
+			if (!contentForComparison) {
+				return undefined;
+			}
+			return condition + " " + contentForComparison;
+		}
+		return condition;
 	}
 
 	/**
