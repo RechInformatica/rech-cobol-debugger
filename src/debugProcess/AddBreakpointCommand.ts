@@ -57,7 +57,7 @@ export class AddBreakpointCommand implements DebugCommand<CobolParagraphBreakpoi
 	 * Creates a regular expression indicating that the breapoint could be successfully set
 	 */
 	private createSetBreakRegex(): RegExp {
-		return /set\sbreakpoint\s(at|in)\s(line|paragraph)\s.*\,\sfile\s([\w\.:\\\/ ]+)/i;
+		return /set\sbreakpoint\s(at|in)\s(line|paragraph)\s.*\,\sfile\s([\w\.:\\\/ \-]+)/i;
 	}
 
 	/**
