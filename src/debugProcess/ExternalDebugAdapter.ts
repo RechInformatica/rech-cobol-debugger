@@ -2,7 +2,6 @@ import { DebugInterface } from "./DebugInterface";
 import { DebugPosition } from "./DebugPosition";
 import { CobolBreakpoint } from "../breakpoint/CobolBreakpoint";
 import { SyncProcess } from "./SyncProcess";
-import { debug } from "vscode";
 import { CobolParagraphBreakpoint } from "../breakpoint/CobolParagraphBreakpoint";
 import { CobolMonitor } from "../monitor/CobolMonitor";
 import { MonitorCommand } from "./MonitorCommand";
@@ -13,6 +12,7 @@ import { AddBreakpointCommand } from "./AddBreakpointCommand";
 import { ChangeVariableValueCommand } from "./ChangeVariableValueCommand";
 import { RequestVariableValueCommand } from "./RequestVariableValue";
 import { DebugPositionCommand } from "./DebugPositionCommand";
+import { ProcessProvider } from "./ProcessProvider";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -22,20 +22,10 @@ export class ExternalDebugAdapter implements DebugInterface {
 	/** External COBOL debugger process */
 	private debugProcess: SyncProcess;
 
-	constructor(commandLineToStartProcess: string) {
-		this.debugProcess = new SyncProcess(commandLineToStartProcess)
-			.withOutputRedirector((outData: string) => this.appendOutputToDebugConsole(outData))
+	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, processProvider?: ProcessProvider) {
+		this.debugProcess = new SyncProcess(commandLineToStartProcess, processProvider)
+			.withOutputRedirector(outputRedirector)
 			.spawn();
-	}
-
-	/**
-	 * Appends output data to debug console
-	 *
-	 * @param outData data to be appended
-	 */
-	private appendOutputToDebugConsole(outData: string): void {
-		const finalText = outData.replace(/isdb>\s+/g, "");
-		debug.activeDebugConsole.append(finalText);
 	}
 
 	setup(): Promise<DebugPosition> {

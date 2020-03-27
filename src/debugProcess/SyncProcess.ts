@@ -1,5 +1,6 @@
-import { ChildProcess, exec } from "child_process";
 import { debug } from "vscode";
+import { NodeProcessProvider } from "./NodeProcessProvider";
+import { ProcessProvider } from "./ProcessProvider";
 
 /**
  * Class to run commands on external process.
@@ -13,8 +14,8 @@ export class SyncProcess {
 
 	/** Command which will be executed to launch external process */
 	private command: string = "";
-	/** External process */
-	private externalProcess: ChildProcess | undefined;
+	/** Implementation to fire commands and interact with external processes */
+	private processProvider: ProcessProvider;
 	/** Last response */
 	private lastResponse: string = "";
 	/** Command currently handled */
@@ -37,9 +38,11 @@ export class SyncProcess {
 	 * Creates an instance of SyncProcess with the specified command line
 	 *
 	 * @param command command which will be executed to launch external process
+	 * @param processProvider optional provider to interact with external process
 	 */
-	public constructor(command: string) {
+	public constructor(command: string, processProvider?: ProcessProvider) {
 		this.command = command;
+		this.processProvider = processProvider ? processProvider : new NodeProcessProvider();
 	}
 
 	/**
@@ -58,7 +61,7 @@ export class SyncProcess {
 	 * @param command command to spawn the process
 	 */
 	public spawn(): SyncProcess {
-		this.externalProcess = exec(this.command, {encoding: "win1252"});
+		this.processProvider.exec(this.command, "win1252");
 		this.configureOutputCallbacks();
 		return this;
 	}
@@ -80,11 +83,11 @@ export class SyncProcess {
 	 * Configure callbacks to intercept external process output
 	 */
 	private configureOutputCallbacks(): void {
-		this.externalProcess!.stdout.on('data', (outdata) => {
-			this.handleOutput(outdata.toString('binary'));
+		this.processProvider.onStdOut((outdata) => {
+			this.handleOutput(outdata);
 		});
-		this.externalProcess!.stderr.on('data', (errdata) => {
-			this.handleOutput(errdata.toString('binary'));
+		this.processProvider.onStdErr((errdata) => {
+			this.handleOutput(errdata);
 		});
 	}
 
@@ -182,9 +185,8 @@ export class SyncProcess {
 	 * @param command command to be written
 	 */
 	public writeComanndToProcessInput(command: string): void {
-        debug.activeDebugConsole.append("\nCurrent command is: " + command + "\n");
 		const fullCommand = command + "\n";
-		this.externalProcess!.stdin.write(fullCommand);
+		this.processProvider.write(fullCommand);
 	}
 
 }

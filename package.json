@@ -2,7 +2,7 @@
 	"name": "rech-cobol-debugger",
 	"displayName": "Rech COBOL Debugger",
 	"description": "Debug COBOL files with Visual Studio Code",
-	"version": "1.0.26",
+	"version": "1.0.27",
 	"publisher": "rechinformatica",
 	"engines": {
 		"vscode": "^1.43.0"

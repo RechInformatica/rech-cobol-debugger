@@ -15,7 +15,7 @@ import { VariableParser } from './parser/VariableParser';
 import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
 import { DebuggerReplManager } from './DebuggerReplManager';
-import { window } from 'vscode';
+import { window, debug } from 'vscode';
 import { CobolMonitorController } from './monitor/CobolMonitorController';
 import Q from "q";
 
@@ -117,7 +117,7 @@ export class CobolDebugSession extends DebugSession {
 
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
 		const commandLine = (<any>args).commandLine;
-		this.debugRuntime = new ExternalDebugAdapter(commandLine);
+		this.debugRuntime = new ExternalDebugAdapter(commandLine, this.appendOutputToDebugConsole);
 		// Setups debugger
 		this.debugRuntime.setup().then(() => {
 			// Gets information about the first line of source code
@@ -524,6 +524,17 @@ export class CobolDebugSession extends DebugSession {
 		this.currentLineNumber = position.line;
 		this.currentSourceName = position.file;
 		this.currentDebuggerOutput = position.output;
+	}
+
+
+	/**
+	 * Appends output data to debug console
+	 *
+	 * @param outData data to be appended
+	 */
+	private appendOutputToDebugConsole(outData: string): void {
+		const finalText = outData.replace(/isdb>\s+/g, "");
+		debug.activeDebugConsole.append(finalText);
 	}
 
 	//---- helpers

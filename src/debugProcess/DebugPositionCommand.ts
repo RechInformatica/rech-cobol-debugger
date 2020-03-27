@@ -36,7 +36,7 @@ export class DebugPositionCommand implements DebugCommand<string, DebugPosition 
 	 * Creates a regular expression to extract debug position from debugger output
 	 */
 	private createDebugPositionRegex(): RegExp {
-		return /^\+*\s+line=(\d+)\s+file=([\w\.:\\\/ ]+)/im;
+		return /^\+*\s+line=(\d+)\s+file=([\w\.:\\\/ \-]+)/im;
 	}
 
 }
