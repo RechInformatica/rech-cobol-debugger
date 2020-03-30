@@ -15,9 +15,10 @@ import { VariableParser } from './parser/VariableParser';
 import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
 import { DebuggerReplManager } from './DebuggerReplManager';
-import { window, debug } from 'vscode';
+import { window, debug, Uri, Position, Location, SourceBreakpoint } from 'vscode';
 import { CobolMonitorController } from './monitor/CobolMonitorController';
 import Q from "q";
+import { CobolBreakpoint } from './breakpoint/CobolBreakpoint';
 
 /** Scope of current variables */
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
@@ -446,8 +447,26 @@ export class CobolDebugSession extends DebugSession {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
 		}
-		new DebuggerReplManager(this.debugRuntime).handleCommand(args.expression);
+		new DebuggerReplManager(this.debugRuntime, this.addLineBreak).handleCommand(args.expression);
 		this.sendResponse(response);
+	}
+
+
+	/**
+	 * Adds a Cobol Breakpoint on the specified line.
+	 * This method invokes VSCode API so the breakpoint red circle is rendered on UI.
+	 *
+	 * Besides, this method also invokes 'setBreakPointsRequest' method and updates breakpoint on
+	 * BreakpointManager and on external debugger if needed.
+	 *
+	 * @param bp breakpoint which will be added, with relevant information about Cobol source
+	 */
+	private addLineBreak(bp: CobolBreakpoint): void {
+		const uri = Uri.file(bp.source);
+		const pos = new Position(bp.line - 1, 0);
+		const loc = new Location(uri, pos);
+		const breakpoint = new SourceBreakpoint(loc, true, bp.condition);
+		debug.addBreakpoints([breakpoint]);
 	}
 
 	private sendVariableValueResponse(variable: DebugProtocol.Variable, response: DebugProtocol.EvaluateResponse): void {

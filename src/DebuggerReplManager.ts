@@ -1,6 +1,5 @@
 import { DebugInterface } from "./debugProcess/DebugInterface";
 import { CobolBreakpoint } from "./breakpoint/CobolBreakpoint";
-import { debug, Uri, Position, Location, SourceBreakpoint } from 'vscode';
 import { CobolParagraphBreakpoint } from "./breakpoint/CobolParagraphBreakpoint";
 
 /** Breakpoint commands for debug console */
@@ -17,14 +16,17 @@ export class DebuggerReplManager {
 
 	/** Debugger runtime which will receive commands */
 	private debugRuntime: DebugInterface;
+	/** Callback to add breakpoint on VSCode debug API */
+	private addLineBreakCallback: (bp: CobolBreakpoint) => void;
 
 	/**
 	 * Creates a 'repl' debugger manager
 	 *
 	 * @param debugRuntime debugger runtime which will receive commands
 	 */
-	constructor(debugRuntime: DebugInterface) {
+	constructor(debugRuntime: DebugInterface, addLineBreakCallback: (bp: CobolBreakpoint) => void) {
 		this.debugRuntime = debugRuntime;
+		this.addLineBreakCallback = addLineBreakCallback;
 	}
 
 	/**
@@ -69,7 +71,7 @@ export class DebuggerReplManager {
 				// VSCode API (lacks line number and/or program name)
 				this.addParagraphBreak({ paragraph: splitted[1], source: source, condition: condition});
 			} else {
-				this.addLineBreak({ line: line, source: source, condition: condition});
+				this.addLineBreakCallback({ line: line, source: source, condition: condition});
 			}
 			return true;
 		}
@@ -83,8 +85,13 @@ export class DebuggerReplManager {
 	 * @param splittedCmd command line splitted by spaces
 	 */
 	private extractProgramNameFromCmd(splittedCmd: string[]): string {
-		const programName = splittedCmd.length > PROGRAM_NAME_INDEX ? splittedCmd[PROGRAM_NAME_INDEX] : "";
-		return programName;
+		if (splittedCmd.length <= PROGRAM_NAME_INDEX) {
+			return '';
+		}
+		if (splittedCmd[PROGRAM_NAME_INDEX].toLowerCase() === "when") {
+			return ''
+		}
+		return splittedCmd[PROGRAM_NAME_INDEX];
 	}
 
 	/**
@@ -121,27 +128,10 @@ export class DebuggerReplManager {
 					// The breakpoint on 'list' command does not return the full name,
 					// so we need to use the full name returned on addBreakpoint command
 					const fullNameBreakpoint: CobolBreakpoint = {line: lastBreak.line, source: filename, condition: bp.condition};
-					this.addLineBreak(fullNameBreakpoint);
+					this.addLineBreakCallback(fullNameBreakpoint);
 				}).catch();
 			}
 		}).catch();
-	}
-
-	/**
-	 * Adds a Cobol Breakpoint on the specified line.
-	 * This method invokes VSCode API so the breakpoint red circle is rendered on UI.
-	 *
-	 * Besides, this method also invokes 'setBreakPointsRequest' method and updates breakpoint on
-	 * BreakpointManager and on external debugger if needed.
-	 *
-	 * @param bp breakpoint which will be added, with relevant information about Cobol source
-	 */
-	private addLineBreak(bp: CobolBreakpoint): void {
-		const uri = Uri.file(bp.source);
-		const pos = new Position(bp.line - 1, 0);
-		const loc = new Location(uri, pos);
-		const breakpoint = new SourceBreakpoint(loc, true, bp.condition);
-		debug.addBreakpoints([breakpoint]);
 	}
 
 }
