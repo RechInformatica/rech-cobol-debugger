@@ -1,5 +1,5 @@
 import { CobolMonitorController } from "./CobolMonitorController";
-import { TreeDataProvider, TreeItem, EventEmitter, Event, ProviderResult, window } from "vscode";
+import { TreeDataProvider, TreeItem, EventEmitter, Event, ProviderResult, window, Range } from "vscode";
 import { CobolMonitor } from "./CobolMonitor";
 
 const CONDITION_ALWAYS = 'always';
@@ -22,10 +22,12 @@ export class CobolMonitorView implements TreeDataProvider<number> {
 	 * Asks user for a new COBOL monitor
 	 */
 	public async askUserForMonitor(): Promise<CobolMonitor | undefined> {
+		const currentSelectedVariable = this.getSelectedVariable();
 		const variableName = await window.showInputBox({
 			placeHolder: 'Variable name',
 			prompt: 'Please specify the variable name to be monitored.',
-			ignoreFocusOut: true
+			ignoreFocusOut: true,
+			value: currentSelectedVariable
 		});
 		if (!variableName) {
 			return undefined;
@@ -38,6 +40,38 @@ export class CobolMonitorView implements TreeDataProvider<number> {
 			variable: variableName,
 			condition: condition
 		};
+	}
+
+	/**
+	 * Returns the selected variable to prefill user input
+	 */
+	private getSelectedVariable(): string {
+		const editor = window.activeTextEditor;
+		if (editor) {
+			let range = this.getSelectionRange();
+			if (!range) {
+				range = editor.document.getWordRangeAtPosition(editor.selection.start, /([a-zA-Z0-9\-])+/g);
+			}
+			if (range) {
+				return editor.document.getText(range);
+			}
+		}
+		return "";
+	}
+
+	/**
+	 * Returns the range selected by user on editor
+	 */
+	private getSelectionRange(): Range | undefined {
+		const textEditor = window.activeTextEditor;
+		if (textEditor) {
+			const startRange = textEditor.selection.start;
+			const endRange = textEditor.selection.end;
+			if (startRange.compareTo(endRange) !== 0) {
+				return new Range(startRange, endRange);
+			}
+		}
+		return undefined;
 	}
 
 	/**
@@ -96,7 +130,7 @@ export class CobolMonitorView implements TreeDataProvider<number> {
 		return label;
 	}
 
-    //------- interface methods
+	//------- interface methods
 
 	getTreeItem(id: number): TreeItem | Thenable<TreeItem> {
 		const currentMonitor = this.controller.getCobolMonitor(id);

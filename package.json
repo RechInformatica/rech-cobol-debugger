@@ -2,7 +2,7 @@
 	"name": "rech-cobol-debugger",
 	"displayName": "Rech COBOL Debugger",
 	"description": "Debug COBOL files with Visual Studio Code",
-	"version": "1.0.28",
+	"version": "1.0.29",
 	"publisher": "rechinformatica",
 	"engines": {
 		"vscode": "^1.43.0"
@@ -109,6 +109,13 @@
 					"command": "rech.cobol.debug.removeCobolMonitor",
 					"when": "view == cobolMonitorView",
 					"group": "inline"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "rech.cobol.debug.addCobolMonitor",
+					"when": "editorTextFocus && editorLangId == 'COBOL'",
+					"group": "cobol"
 				}
 			]
 		},
