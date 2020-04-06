@@ -91,6 +91,24 @@ describe('External debug adapter', () => {
         expect(true).to.equal(result);
     });
 
+    it('Changes variable value in hexadecimal', async () => {
+        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new ChangeValueProvider());
+        const result = await adapter.changeVariableValue('-x w-dummy-var', '20');
+        expect(true).to.equal(result);
+    });
+
+    it('Changes variable value with subindex', async () => {
+        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new ChangeValueProvider());
+        const result = await adapter.changeVariableValue('wapi-r07-nomdco(wapi-r07-tadcoc:1)', 'L');
+        expect(true).to.equal(result);
+    });
+
+    it('Changes variable value with subindex and hexadecimal', async () => {
+        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new ChangeValueProvider());
+        const result = await adapter.changeVariableValue('-x wapi-r07-nomdco(wapi-r07-tadcoc:1)', 'L');
+        expect(true).to.equal(result);
+    });
+
     it('Requests variable value', async () => {
         const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new RequestValueProvider());
         const result = await adapter.requestVariableValue('w-dummy-var');

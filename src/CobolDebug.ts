@@ -22,6 +22,8 @@ import { CobolBreakpoint } from './breakpoint/CobolBreakpoint';
 
 /** Scope of current variables */
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
+/** Scope of watched variables */
+const WATCHED_VARIABLES_SCOPE_NAME = "Watched variables";
 /** Custom comand indicating to step out of the current program */
 export const CUSTOM_COMMAND_STEP_OUT_PROGRAM = "stepOutProgram";
 /** Custom comand indicating to run to the next program */
@@ -55,6 +57,8 @@ export class CobolDebugSession extends DebugSession {
 	private monitorController: CobolMonitorController;
 	/** Indicates wheter the code is running or not */
 	private running: boolean = false;
+	/** Variables currently watched */
+	private watchedVariables: WatchedVariable[] = [];
 
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
@@ -245,6 +249,7 @@ export class CobolDebugSession extends DebugSession {
 		response.body = {
 			scopes: [
 				new Scope(CURRENT_VARIABLES_SCOPE_NAME, this.variableHandles.create(CURRENT_VARIABLES_SCOPE_NAME), false),
+				new Scope(WATCHED_VARIABLES_SCOPE_NAME, this.variableHandles.create(WATCHED_VARIABLES_SCOPE_NAME), true),
 			]
 		};
 		this.sendResponse(response);
@@ -263,6 +268,10 @@ export class CobolDebugSession extends DebugSession {
 		switch (reference) {
 			case CURRENT_VARIABLES_SCOPE_NAME: {
 				this.resolveCurrentVariables(response);
+				break;
+			}
+			case WATCHED_VARIABLES_SCOPE_NAME: {
+				this.resolveWatchedVariables(response);
 				break;
 			}
 		}
@@ -372,7 +381,7 @@ export class CobolDebugSession extends DebugSession {
 		}
 		this.debugRuntime.addMonitor(args).then((success) => {
 			this.sendBooleanResponse(response, success);
-		}).catch(() =>{
+		}).catch(() => {
 			this.sendBooleanResponse(response, false);
 		});
 	}
@@ -386,7 +395,7 @@ export class CobolDebugSession extends DebugSession {
 		}
 		this.debugRuntime.removeMonitor(args).then((success) => {
 			this.sendBooleanResponse(response, success);
-		}).catch(() =>{
+		}).catch(() => {
 			this.sendBooleanResponse(response, false);
 		});
 	}
@@ -431,8 +440,10 @@ export class CobolDebugSession extends DebugSession {
 			return this.sendResponse(response);
 		}
 		new VariableParser(this.debugRuntime).captureVariableInfo(args.expression).then((variable) => {
+			this.updateWatchedVarArray(variable);
 			this.sendVariableValueResponse(variable, response);
 		}).catch(() => {
+			this.removeWatchedVarFromArray(args.expression);
 			// This is needed because otherwise VSCode would show the last successful watch result, which might be
 			// outdated
 			response.body = {
@@ -443,6 +454,30 @@ export class CobolDebugSession extends DebugSession {
 		});
 	}
 
+	/**
+	 * Updates the array which contains information about the watched variables
+	 */
+	private updateWatchedVarArray(variable: DebugProtocol.Variable): void {
+		let existsOnArray: boolean = false;
+		for (let i = 0; i < this.watchedVariables.length; i++) {
+			const watched = this.watchedVariables[i];
+			if (watched.name === variable.name) {
+				watched.originalInstance = variable;
+				existsOnArray = true;
+			}
+		}
+		if (!existsOnArray) {
+			this.watchedVariables.push({ name: variable.name, originalInstance: variable });
+		}
+	}
+
+	/**
+	 * Removes the variable with whe specified name from watched variables array
+	 */
+	private removeWatchedVarFromArray(name: string): void {
+		this.watchedVariables = this.watchedVariables.filter(w => w.name !== name);
+	}
+
 	private replRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
 		if (!this.debugRuntime) {
 			return this.sendResponse(response);
@@ -450,7 +485,6 @@ export class CobolDebugSession extends DebugSession {
 		new DebuggerReplManager(this.debugRuntime, this.addLineBreak).handleCommand(args.expression);
 		this.sendResponse(response);
 	}
-
 
 	/**
 	 * Adds a Cobol Breakpoint on the specified line.
@@ -494,6 +528,25 @@ export class CobolDebugSession extends DebugSession {
 		}).catch(() => {
 			this.sendResponse(response);
 		});
+	}
+
+	private resolveWatchedVariables(response: DebugProtocol.VariablesResponse) {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		response.body = {
+			variables: this.getAllWatchedVariables()
+		};
+		this.watchedVariables = [];
+		this.sendResponse(response);
+	}
+
+	/**
+	 * Returns an array with every existing watched variable
+	 */
+	private getAllWatchedVariables(): DebugProtocol.Variable[] {
+		const originalVarInstances = this.watchedVariables.map(w => w.originalInstance);
+		return originalVarInstances;
 	}
 
 	/**
@@ -561,4 +614,14 @@ export class CobolDebugSession extends DebugSession {
 	private createSource(filePath: string): Source {
 		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'cobol-adapter-data');
 	}
+}
+
+/**
+ * Single variable representation on Watch group
+ */
+interface WatchedVariable {
+	/** Variable name */
+	name: string;
+	/** Variable instance on VSCode API */
+	originalInstance: DebugProtocol.Variable;
 }
