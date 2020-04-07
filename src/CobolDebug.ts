@@ -598,7 +598,6 @@ export class CobolDebugSession extends DebugSession {
 		this.currentDebuggerOutput = position.output;
 	}
 
-
 	/**
 	 * Appends output data to debug console
 	 *

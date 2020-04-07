@@ -15,7 +15,6 @@ export class CommandUtils {
 		return `\"${source}\"`;
 	}
 
-
 	/**
 	 * Creates a Regular Expression to detect COBOL debugger output, indicating that the specified word is not
 	 * a Cobol variable

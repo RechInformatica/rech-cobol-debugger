@@ -13,6 +13,7 @@ import { ChangeVariableValueCommand } from "./ChangeVariableValueCommand";
 import { RequestVariableValueCommand } from "./RequestVariableValue";
 import { DebugPositionCommand } from "./DebugPositionCommand";
 import { ProcessProvider } from "./ProcessProvider";
+import * as path from "path";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -176,11 +177,58 @@ export class ExternalDebugAdapter implements DebugInterface {
 			const cmd = new DebugPositionCommand();
 			this.sendCommand(cmd.buildCommand(commandName), cmd.getExpectedRegExes(), extraFailRegexes).then((output) => {
 				const position = cmd.validateOutput(output);
-				return position ? resolve(position) : reject();
+				// Checks whether the debugger returned a valid debugging position
+				if (position) {
+					// If the position already contains file name with directory, we don't
+					// need to look for the current directory of the process
+					if (position.file.includes("\\") || position.file.includes("/")) {
+						//
+						// Simply returns the position, since it contains the full path to the file.
+						//
+						// We don't need to make a second request to the external debugger looking
+						// for the current directory
+						return resolve(position);
+					} else {
+						// Makes another request to the external debugger process
+						// looking for current directory
+						this.requestCurrentDirectory().then((currentDir) => {
+							if (currentDir) {
+								// The position now contains a full path and VSCode API
+								// will properly show the file on editor
+								position.file = this.addSeparatorIfNeeded(currentDir.trim()) + position.file;
+								return resolve(position);
+							} else {
+								return reject("Couldn't find full path for " + position.file);
+							}
+						}).catch((error) => {
+							return reject(error);
+						});
+					}
+				} else {
+					return reject();
+				}
 			}).catch((error) => {
 				return reject(error);
 			});
 		});
+	}
+
+	/**
+	 * Adds a file separator to the specified directory, or returns the
+	 * directory itself if already ends with file separator
+	 */
+	private addSeparatorIfNeeded(directory: string): string {
+		if (directory.endsWith("\\") || directory.endsWith("/")) {
+			return directory;
+		}
+		return directory + path.sep;
+	}
+
+	/**
+	 * Requests the current directory to the external debugger
+	 */
+	private requestCurrentDirectory(): Promise<string | undefined> {
+		return this.requestVariableValue('-env user.dir');
 	}
 
 	/**
