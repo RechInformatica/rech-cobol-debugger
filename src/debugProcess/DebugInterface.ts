@@ -87,19 +87,26 @@ export interface DebugInterface {
 	removeMonitor(variable: string): Promise<boolean>;
 
 	/**
-	 * Adds a Breakpoint
+	 * Adds a breakpoint
 	 *
 	 * @param breakpoint breakpoint to set
 	 */
-	addBreakpoint(breakpoint: CobolBreakpoint): Promise<string | undefined>;
+	addBreakpoint(breakpoint: CobolBreakpoint): Promise<string>;
 
 	/**
-	 * Adds a Breakpoint on the specified paragraph instead of
+	 * Adds a breakpoint on the specified paragraph instead of
 	 * specifying a line
 	 *
 	 * @param breakpoint breakpoint to set
 	 */
-	addParagraphBreakpoint(breakpoint: CobolParagraphBreakpoint): Promise<string | undefined>;
+	addParagraphBreakpoint(breakpoint: CobolParagraphBreakpoint): Promise<string>;
+
+	/**
+	 * Adds a breakpoint on the first executable line of the specified program
+	 *
+	 * @param program name of the program where breakpoint will be set
+	 */
+	addBreakpointOnFirstLine(program: string): Promise<boolean>;
 
 	/**
 	 * Removes an existing breakpoint

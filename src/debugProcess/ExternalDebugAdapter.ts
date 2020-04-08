@@ -14,6 +14,7 @@ import { RequestVariableValueCommand } from "./RequestVariableValue";
 import { DebugPositionCommand } from "./DebugPositionCommand";
 import { ProcessProvider } from "./ProcessProvider";
 import * as path from "path";
+import { AddBreakpointOnFirstLineCommand } from "./AddBreakpointOnFirstLineCommand";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -129,6 +130,17 @@ export class ExternalDebugAdapter implements DebugInterface {
 		return this.addBreakpointOnLocation(br);
 	}
 
+	addBreakpointOnFirstLine(program: string): Promise<boolean> {
+		return new Promise(async (resolve, reject) => {
+			const cmd = new AddBreakpointOnFirstLineCommand();
+			this.sendCommand(cmd.buildCommand(program), cmd.getExpectedRegExes()).then((output) => {
+				return resolve(cmd.validateOutput(output));
+			}).catch(async (error) => {
+				return reject(error);
+			});
+		});
+	}
+
 	private addBreakpointOnLocation(br: CobolParagraphBreakpoint): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			const cmd = new AddBreakpointCommand();
@@ -179,8 +191,8 @@ export class ExternalDebugAdapter implements DebugInterface {
 				const position = cmd.validateOutput(output);
 				// Checks whether the debugger returned a valid debugging position
 				if (position) {
-					// If the position already contains file name with directory, we don't
-					// need to look for the current directory of the process
+					// // If the position already contains file name with directory, we don't
+					// // need to look for the current directory of the process
 					if (position.file.includes("\\") || position.file.includes("/")) {
 						//
 						// Simply returns the position, since it contains the full path to the file.

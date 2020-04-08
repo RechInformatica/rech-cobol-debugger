@@ -14,7 +14,7 @@ import { ExternalDebugAdapter } from './debugProcess/ExternalDebugAdapter';
 import { VariableParser } from './parser/VariableParser';
 import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
-import { DebuggerReplManager } from './DebuggerReplManager';
+import { DebuggerReplManager } from './repl/DebuggerReplManager';
 import { window, debug, Uri, Position, Location, SourceBreakpoint } from 'vscode';
 import { CobolMonitorController } from './monitor/CobolMonitorController';
 import Q from "q";

@@ -1,65 +1,26 @@
-import { DebugInterface } from "./debugProcess/DebugInterface";
-import { CobolBreakpoint } from "./breakpoint/CobolBreakpoint";
-import { CobolParagraphBreakpoint } from "./breakpoint/CobolParagraphBreakpoint";
+import { ReplCommand } from "./ReplCommand";
+import { CobolBreakpoint } from "../breakpoint/CobolBreakpoint";
+import { DebugInterface } from "../debugProcess/DebugInterface";
+import { CobolParagraphBreakpoint } from "../breakpoint/CobolParagraphBreakpoint";
 
-/** Breakpoint commands for debug console */
-const DEBUGGER_BREAK_COMMANDS = ["br"];
 /** Program name index within command line to insert breakpoint */
 const PROGRAM_NAME_INDEX = 2;
 /** Condition index within command line to insert breakpoint */
 const CONDITION_INDEX = 1;
 
 /**
- * Class to manage 'repl' (Read–eval–print loop) console commands
+ * Class to set breakpoint on specified line or paragraph through REPL console
  */
-export class DebuggerReplManager {
+export class SetBreakOnLocationReplCommand implements ReplCommand {
 
-	/** Debugger runtime which will receive commands */
-	private debugRuntime: DebugInterface;
 	/** Callback to add breakpoint on VSCode debug API */
 	private addLineBreakCallback: (bp: CobolBreakpoint) => void;
 
-	/**
-	 * Creates a 'repl' debugger manager
-	 *
-	 * @param debugRuntime debugger runtime which will receive commands
-	 */
-	constructor(debugRuntime: DebugInterface, addLineBreakCallback: (bp: CobolBreakpoint) => void) {
-		this.debugRuntime = debugRuntime;
+	constructor(addLineBreakCallback: (bp: CobolBreakpoint) => void) {
 		this.addLineBreakCallback = addLineBreakCallback;
 	}
 
-	/**
-	 * Handles the specified command
-	 *
-	 * @param command
-	 */
-	public handleCommand(command: string): void {
-		if (this.isBreakCommand(command)) {
-			if (!this.handleBreakFromCmd(command)) {
-				this.debugRuntime.sendRawCommand(command);
-			}
-		} else {
-			this.debugRuntime.sendRawCommand(command);
-		}
-	}
-
-	/**
-	 * Checks if user has typed a breakpoint command on Debug console
-	 *
-	 * @param command command to check
-	 */
-	private isBreakCommand(command: string): boolean {
-		const splittedCommand = command.toLowerCase().trim().split(/\s+/);
-		return DEBUGGER_BREAK_COMMANDS.some(b => splittedCommand[0] === b);
-	}
-
-	/**
-	 * Handles the breakpoint comand specified through command line
-	 *
-	 * @param command command line typed by user on Debug Console
-	 */
-	private handleBreakFromCmd(command: string): boolean {
+	fireCommand(debugRuntime: DebugInterface, command: string): void {
 		const splitted = command.trim().split(/\s+/);
 		if (splitted.length > 1) {
 			const line = Number(splitted[1]);
@@ -69,13 +30,11 @@ export class DebuggerReplManager {
 			if (isNaN(line) || !source) {
 				// PS.: In this situation we do not have enough information to set breakpoint on
 				// VSCode API (lacks line number and/or program name)
-				this.addParagraphBreak({ paragraph: splitted[1], source: source, condition: condition});
+				this.addParagraphBreak(debugRuntime, { paragraph: splitted[1], source: source, condition: condition});
 			} else {
 				this.addLineBreakCallback({ line: line, source: source, condition: condition});
 			}
-			return true;
 		}
-		return false;
 	}
 
 	/**
@@ -114,13 +73,13 @@ export class DebuggerReplManager {
 	 *
 	 * @param bp breakpoint which will be added, with relevant information about Cobol source
 	 */
-	private addParagraphBreak(bp: CobolParagraphBreakpoint): void {
-		this.debugRuntime.addParagraphBreakpoint(bp).then(filename => {
+	private addParagraphBreak(debugRuntime: DebugInterface, bp: CobolParagraphBreakpoint): void {
+		debugRuntime.addParagraphBreakpoint(bp).then(filename => {
 			if (filename) {
 				// We need to list existing breakpoints on debugger to find
 				// the line where it has been added, since the command typed
 				// on Debug Console has only the paragraph name and not the line number
-				this.debugRuntime.listBreakpoints().then(breaks => {
+				debugRuntime.listBreakpoints().then(breaks => {
 					// The breakpoint added moments ago is always the last one
 					// in the list, so we can be sure this is the right one
 					// to add on UI through VSCode API
