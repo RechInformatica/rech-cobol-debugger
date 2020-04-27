@@ -1,6 +1,7 @@
 import { CobolMonitorModel } from "./CobolMonitorModel";
 import { CobolMonitorView } from "./CobolMonitorView";
 import { CobolMonitor } from "./CobolMonitor";
+import { CobolStack } from "../CobolStack";
 
 /**
  * Controller for managing COBOL monitors
@@ -12,8 +13,8 @@ export class CobolMonitorController {
 	/** View for COBOL monitors */
 	private view: CobolMonitorView
 
-	constructor() {
-		this.model = new CobolMonitorModel();
+	constructor(cobolStack: CobolStack) {
+		this.model = new CobolMonitorModel(cobolStack);
 		this.view = new CobolMonitorView(this);
 	}
 
@@ -58,7 +59,13 @@ export class CobolMonitorController {
 	public removeCobolMonitor(id: number): void {
 		this.model.removeCobolMonitor(id)
 			.then(() => this.view.refresh())
-			.catch(() => this.view.showUnexpectedErrorMessage('Remove monitor'));
+			.catch((details) => {
+				if (details) {
+					this.view.showDetailedMessage(details)
+				} else {
+					this.view.showUnexpectedErrorMessage('Remove monitor')
+				}
+			});
 	}
 
 	/**

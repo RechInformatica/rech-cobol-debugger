@@ -7,11 +7,13 @@ import { CobolEvaluatableExpressionProvider } from './provider/CobolEvaluatableE
 import { CUSTOM_COMMAND_STEP_OUT_PROGRAM, CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM } from './CobolDebug';
 import { CobolDebugSetup } from './CobolDebuggerSetup';
 import { CobolMonitorController } from './monitor/CobolMonitorController';
+import { CobolStack } from './CobolStack';
 
 export function activate(context: ExtensionContext) {
 
 	// Creates a controller to manage COBOL monitors
-	const monitorController = new CobolMonitorController();
+	const cobolStack = new CobolStack();
+	const monitorController = new CobolMonitorController(cobolStack);
 
 	// Extension commands
 	context.subscriptions.push(commands.registerCommand('rech.cobol.debug.startDebugger', () => {
@@ -34,7 +36,7 @@ export function activate(context: ExtensionContext) {
 	}));
 
 	// Register remaining providers
-	setupExtensionProviders(context, monitorController);
+	setupExtensionProviders(context, cobolStack, monitorController);
 }
 
 /**
@@ -79,12 +81,11 @@ function sendCustomRequest(command: string): void {
 
 /**
  * Setup needed providers for COBOL debug adapter.
- *
- * @param context extension context where providers will be registered.
  */
-function setupExtensionProviders(context: ExtensionContext, controller: CobolMonitorController): void {
+function setupExtensionProviders(context: ExtensionContext, cobolStack: CobolStack, controller: CobolMonitorController): void {
 	registerConfigurationProvider(context);
-	registerDescriptorFactory(context, controller);
+	registerDescriptorFactory(context, cobolStack);
+	registerTerminatedListener(controller);
 	registerExpressionProvider();
 }
 
@@ -100,15 +101,22 @@ function registerConfigurationProvider(context: ExtensionContext): void {
 
 /**
  * Register an adapter factory for 'COBOL' debug type
- *
- * @param context extension context where providers will be registered.
  */
-function registerDescriptorFactory(context: ExtensionContext, controller: CobolMonitorController): void {
-	const factory: DebugAdapterDescriptorFactory = new CobolDebugAdapterDescriptorFactory(controller);
+function registerDescriptorFactory(context: ExtensionContext, cobolStack: CobolStack): void {
+	const factory: DebugAdapterDescriptorFactory = new CobolDebugAdapterDescriptorFactory(cobolStack);
 	context.subscriptions.push(debug.registerDebugAdapterDescriptorFactory('COBOL', factory));
 	if ('dispose' in factory) {
 		context.subscriptions.push(factory);
 	}
+}
+
+/**
+ * Registers a listener to detect when COBOL debug session has terminated
+ */
+function registerTerminatedListener(controller: CobolMonitorController): void {
+	debug.onDidTerminateDebugSession(() => {
+		controller.removeAllCobolMonitors();
+	});
 }
 
 /**

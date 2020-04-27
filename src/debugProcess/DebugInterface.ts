@@ -87,6 +87,11 @@ export interface DebugInterface {
 	removeMonitor(variable: string): Promise<boolean>;
 
 	/**
+	 * Removes every existing monitor
+	 */
+	removeAllMonitors(): Promise<boolean>;
+
+	/**
 	 * Adds a breakpoint
 	 *
 	 * @param breakpoint breakpoint to set

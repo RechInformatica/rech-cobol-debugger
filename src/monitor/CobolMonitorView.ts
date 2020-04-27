@@ -100,6 +100,13 @@ export class CobolMonitorView implements TreeDataProvider<number> {
 	}
 
 	/**
+	 * Shows detailed warning message
+	 */
+	public showDetailedMessage(detail: string): void {
+		window.showWarningMessage(detail);
+	}
+
+	/**
 	 * Shows message for unexpected error on the specified operation
 	 */
 	public showUnexpectedErrorMessage(operation: string): void {
@@ -126,7 +133,7 @@ export class CobolMonitorView implements TreeDataProvider<number> {
 	 * @param m monitor to have the label built
 	 */
 	private buildLabel(m: CobolMonitor): string {
-		const label = `${m!.variable} when ${m!.condition}`;
+		const label = `${m!.variable} [${m.source}] when ${m!.condition}`;
 		return label;
 	}
 

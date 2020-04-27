@@ -16,9 +16,8 @@ import { DebugPosition } from './debugProcess/DebugPosition';
 import { BreakpointManager } from './breakpoint/BreakpointManager';
 import { DebuggerReplManager } from './repl/DebuggerReplManager';
 import { window, debug, Uri, Position, Location, SourceBreakpoint } from 'vscode';
-import { CobolMonitorController } from './monitor/CobolMonitorController';
-import Q from "q";
 import { CobolBreakpoint } from './breakpoint/CobolBreakpoint';
+import { CobolStack } from './CobolStack';
 
 /** Scope of current variables */
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
@@ -32,15 +31,15 @@ export const CUSTOM_COMMAND_RUN_TO_NEXT_PROGRAM = "runToNextProgram";
 export const CUSTOM_COMMAND_ADD_MONITOR = "addMonitor";
 /** Custom comand indicating to remove a COBOL Monitor */
 export const CUSTOM_COMMAND_REMOVE_MONITOR = "removeMonitor";
+/** Custom comand indicating to remove every existing COBOL Monitor */
+export const CUSTOM_COMMAND_REMOVE_ALL_MONITORS = "removeAllMonitors";
 
 export class CobolDebugSession extends DebugSession {
 
 	// we don't support multiple threads, so we can use a hardcoded ID for the default thread
 	private static THREAD_ID = 1;
-	/** Current line number within buffer source */
-	private currentLineNumber = 0;
-	/** Name of the current file/source code */
-	private currentSourceName = "";
+	/** Instance representing the stack of current COBOL program */
+	private cobolStack: CobolStack;
 	/** Emitter of VSCode debugger API events */
 	private emitter = new EventEmitter();
 	/** Content of the last debugged line */
@@ -53,8 +52,6 @@ export class CobolDebugSession extends DebugSession {
 	private variableHandles = new Handles<string>();
 	/** Class to manage source breakpoints */
 	private breakpointManager: BreakpointManager | undefined;
-	/** Controller for COBOL monitors */
-	private monitorController: CobolMonitorController;
 	/** Indicates wheter the code is running or not */
 	private running: boolean = false;
 	/** Variables currently watched */
@@ -64,12 +61,12 @@ export class CobolDebugSession extends DebugSession {
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
 	 */
-	public constructor(controller: CobolMonitorController) {
+	public constructor(cobolStack: CobolStack) {
 		super();
 		// this debugger uses zero-based lines and columns
 		this.setDebuggerLinesStartAt1(false);
 		this.setDebuggerColumnsStartAt1(false);
-		this.monitorController = controller;
+		this.cobolStack = cobolStack;
 		// setup event handlers
 		this.emitter.on('stopOnEntry', () => {
 			this.sendEvent(new StoppedEvent('entry', CobolDebugSession.THREAD_ID));
@@ -127,17 +124,8 @@ export class CobolDebugSession extends DebugSession {
 		this.debugRuntime.setup().then(() => {
 			// Gets information about the first line of source code
 			this.debugRuntime!.start().then((position) => {
-				// Adds pending monitors on external debugger
-				this.addPendingMonitors().then(() => {
-					// Finally, tells VSCode API/UI to position on first line of source code
-					this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
-				}).catch(() => {
-					// Even though an error happened while adding pending monitors we can
-					// continue debugging. It's not a critical problem that would really
-					// bother user. So, just show a notification and keep going
-					window.showWarningMessage('Not all monitors could be added on external debugger because an unexpected problem happened.')
-					this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
-				})
+				// Finally, tells VSCode API/UI to position on first line of source code
+				this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
 			}).catch(() => {
 				this.onProblemStartingDebugger(response);
 			});
@@ -188,9 +176,9 @@ export class CobolDebugSession extends DebugSession {
 			stackFrames: [{
 				id: 1,
 				column: 1,
-				line: this.currentLineNumber,
+				line: this.cobolStack.currentLineNumber,
 				name: "Current",
-				source: new Source(this.currentSourceName)
+				source: new Source(this.cobolStack.currentSourceName)
 			}],
 			totalFrames: 1
 		};
@@ -293,33 +281,6 @@ export class CobolDebugSession extends DebugSession {
 		});
 	}
 
-	/**
-	 * Add on external debugger pending COBOL monitors, which are currently
-	 * only available at VSCode UI.
-	 */
-	private addPendingMonitors(): Promise<void> {
-		return new Promise((resolve, reject) => {
-			if (!this.debugRuntime) {
-				return reject();
-			}
-			const monitors = this.monitorController.getAllCobolMonitors();
-			const monitorPromises: Promise<boolean>[] = [];
-			for (let i = 0; i < monitors.length; i++) {
-				const m = monitors[i];
-				monitorPromises.push(this.debugRuntime.addMonitor(m));
-			}
-			Q.allSettled(monitorPromises).then((results) => {
-				const anyRejection = results.some(r => r.state == "rejected");
-				if (anyRejection) {
-					return reject();
-				}
-				return resolve();
-			}).catch(() => {
-				return reject();
-			});
-		});
-	}
-
 	protected customRequest(command: string, response: DebugProtocol.Response, args: any): void {
 		if (this.running) {
 			return this.sendResponse(response);
@@ -336,6 +297,9 @@ export class CobolDebugSession extends DebugSession {
 				break;
 			case CUSTOM_COMMAND_REMOVE_MONITOR:
 				this.removeMonitorRequest(response, args);
+				break;
+			case CUSTOM_COMMAND_REMOVE_ALL_MONITORS:
+				this.removeAllMonitorsRequest(response);
 				break;
 			default:
 				return this.sendResponse(response);
@@ -394,6 +358,20 @@ export class CobolDebugSession extends DebugSession {
 			return this.sendResponse(response);
 		}
 		this.debugRuntime.removeMonitor(args).then((success) => {
+			this.sendBooleanResponse(response, success);
+		}).catch(() => {
+			this.sendBooleanResponse(response, false);
+		});
+	}
+
+	/**
+	 * Request to remove every existing COBOL monitors on external debugger
+	 */
+	private removeAllMonitorsRequest(response: DebugProtocol.Response): void {
+		if (!this.debugRuntime) {
+			return this.sendResponse(response);
+		}
+		this.debugRuntime.removeAllMonitors().then((success) => {
 			this.sendBooleanResponse(response, success);
 		}).catch(() => {
 			this.sendBooleanResponse(response, false);
@@ -593,8 +571,8 @@ export class CobolDebugSession extends DebugSession {
 	 */
 	private updateCurrentPositionInfo(position: DebugPosition): void {
 		this.lastDebuggerOutput = this.currentDebuggerOutput;
-		this.currentLineNumber = position.line;
-		this.currentSourceName = position.file;
+		this.cobolStack.currentLineNumber = position.line;
+		this.cobolStack.currentSourceName = position.file;
 		this.currentDebuggerOutput = position.output;
 	}
 

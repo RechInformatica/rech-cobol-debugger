@@ -15,6 +15,7 @@ import { DebugPositionCommand } from "./DebugPositionCommand";
 import { ProcessProvider } from "./ProcessProvider";
 import * as path from "path";
 import { AddBreakpointOnFirstLineCommand } from "./AddBreakpointOnFirstLineCommand";
+import { UnmonitorAllCommand } from "./UnmonitorAllCommand";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -121,6 +122,18 @@ export class ExternalDebugAdapter implements DebugInterface {
 			})
 		});
 	}
+
+	removeAllMonitors(): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			const cmd = new UnmonitorAllCommand();
+			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then((output) => {
+				return resolve(cmd.validateOutput(output));
+			}).catch((e) => {
+				return reject(e);
+			})
+		});
+	}
+
 
 	addBreakpoint(br: CobolBreakpoint): Promise<string> {
 		return this.addBreakpointOnLocation({paragraph: `${br.line}`, source: br.source, condition: br.condition});

@@ -1,17 +1,17 @@
 import { DebugAdapterDescriptorFactory, DebugSession, DebugAdapterExecutable, ProviderResult, DebugAdapterDescriptor, DebugAdapterServer } from "vscode";
 import { CobolDebugSession } from "../CobolDebug";
 import { Server, createServer, AddressInfo } from "net";
-import { CobolMonitorController } from "../monitor/CobolMonitorController";
+import { CobolStack } from "../CobolStack";
 
 export class CobolDebugAdapterDescriptorFactory implements DebugAdapterDescriptorFactory {
 
-	/** Controller for COBOL monitors */
-	private controller: CobolMonitorController;
+	/** Instance representing the stack of current COBOL program */
+	private cobolStack: CobolStack;
 
 	private server?: Server;
 
-	constructor(controller: CobolMonitorController) {
-		this.controller = controller;
+	constructor(cobolStack: CobolStack) {
+		this.cobolStack = cobolStack;
 	}
 
 	createDebugAdapterDescriptor(_session: DebugSession, _executable: DebugAdapterExecutable | undefined): ProviderResult<DebugAdapterDescriptor> {
@@ -19,7 +19,7 @@ export class CobolDebugAdapterDescriptorFactory implements DebugAdapterDescripto
 		if (!this.server) {
 			// start listening on a random port
 			this.server = createServer(socket => {
-				const session = new CobolDebugSession(this.controller);
+				const session = new CobolDebugSession(this.cobolStack);
 				session.setRunAsServer(true);
 				session.start(<NodeJS.ReadableStream>socket, socket);
 			}).listen(0);

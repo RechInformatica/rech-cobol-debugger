@@ -2,7 +2,7 @@
 	"name": "rech-cobol-debugger",
 	"displayName": "Rech COBOL Debugger",
 	"description": "Debug COBOL files with Visual Studio Code",
-	"version": "1.0.32",
+	"version": "1.0.33",
 	"publisher": "rechinformatica",
 	"engines": {
 		"vscode": "^1.43.0"
@@ -53,9 +53,6 @@
 	"activationEvents": [
 		"onLanguage:COBOL",
 		"onCommand:rech.cobol.debug.startDebugger",
-		"onCommand:rech.cobol.debug.addCobolMonitor",
-		"onCommand:rech.cobol.debug.removeCobolMonitor",
-		"onCommand:rech.cobol.debug.removeAllCobolMonitors",
 		"onDebug"
 	],
 	"contributes": {
@@ -160,19 +157,20 @@
 			{
 				"command": "rech.cobol.debug.addCobolMonitor",
 				"title": "Rech COBOL Debugger: Add COBOL monitor",
-				"icon": "$(add)"
+				"icon": "$(add)",
+				"enablement": "inDebugMode"
 			},
 			{
 				"command": "rech.cobol.debug.removeCobolMonitor",
 				"title": "Rech COBOL Debugger: Remove COBOL monitor",
 				"icon": "$(trash)",
-				"enablement": "view == cobolMonitorView"
+				"enablement": "view == cobolMonitorView && inDebugMode"
 			},
 			{
 				"command": "rech.cobol.debug.removeAllCobolMonitors",
 				"title": "Rech COBOL Debugger: Remove all COBOL monitors",
 				"icon": "$(close-all)",
-				"enablement": "view == cobolMonitorView"
+				"enablement": "view == cobolMonitorView && inDebugMode"
 			}
 		],
 		"keybindings": [

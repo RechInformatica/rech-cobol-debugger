@@ -104,6 +104,18 @@ describe('External debug adapter', () => {
         expect(false).to.equal(result);
     });
 
+    it('Unmonitors all variables with success', async () => {
+        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new UnmonitorAllSuccessProvider());
+        const result = await adapter.removeAllMonitors();
+        expect(true).to.equal(result);
+    });
+
+    it('Unmonitors all variables with failure', async () => {
+        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new UnmonitorAllFailureProvider());
+        const result = await adapter.removeAllMonitors();
+        expect(false).to.equal(result);
+    });
+
     it('Monitors variable', async () => {
         const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new MonitorProvider());
         const result = await adapter.addMonitor({ variable: 'w-dummy-var', condition: 'always' });
@@ -257,6 +269,26 @@ class UnmonitorFailureProvider extends BaseMockProvider {
     getOutputContent(): string {
         return ' \n' +
             ' - not found monitor \'w-dummy-var\'\n' +
+            'isdb>';
+    }
+
+}
+
+class UnmonitorAllSuccessProvider extends BaseMockProvider {
+
+    getOutputContent(): string {
+        return ' \n' +
+            ' + clear all monitors\n' +
+            'isdb>';
+    }
+
+}
+
+class UnmonitorAllFailureProvider extends BaseMockProvider {
+
+    getOutputContent(): string {
+        return ' \n' +
+            ' - unexpected error  usage:\n' +
             'isdb>';
     }
 
