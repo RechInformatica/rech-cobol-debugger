@@ -18,9 +18,7 @@ If you use a different COBOL compiler, please help us improve this extension! Te
 
 ## Configuration steps
 
-It is suggested to use isCOBOL™ command-line debugger _isdbg_ since the commands fired by this extension respect the commands expected by _isdbg_.
-
-You need to configure the location/command-line to start the external debugger, as follows:
+It is suggested to use isCOBOL™ command-line debugger _isdbg_ since the commands fired by this extension respect the commands expected by _isdbg_. You need to configure the location/command-line to start the external debugger, as follows:
 
 !['Input UI' Input UI](images/program-name-input.png)
 
