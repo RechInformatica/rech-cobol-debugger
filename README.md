@@ -14,7 +14,7 @@ The goal of this extension is to provide a general-purpose debug adapter for any
 
 We plan to test/validate different command-line debuggers with this extension on the next months.
 
-If you use a different COBOL compiler, please help us improve this extension! Tell us whether or not your command-line debugger is already supported by this extension. We are open to Pull Requests too!
+If you use a different COBOL compiler, please help us improve this extension! Tell us whether or not your command-line debugger is already supported. We are open to Pull Requests too!
 
 ## Configuration steps
 
