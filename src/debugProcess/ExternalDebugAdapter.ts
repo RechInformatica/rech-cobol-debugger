@@ -16,7 +16,7 @@ import { ProcessProvider } from "./ProcessProvider";
 import * as path from "path";
 import { AddBreakpointOnFirstLineCommand } from "./AddBreakpointOnFirstLineCommand";
 import { UnmonitorAllCommand } from "./UnmonitorAllCommand";
-import { DebugConfigsProvider, ICommand } from "./DebugConfigs";
+import { DebugConfigsProvider, ICommand, IDebugCommands } from "./DebugConfigs";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -27,11 +27,17 @@ export class ExternalDebugAdapter implements DebugInterface {
 	private debugProcess: SyncProcess;
 
 	/** Debug configuration */
-	private configs = new DebugConfigsProvider();
-	private commands = this.configs.commands;
-	private executionFinishedRegularExpressions = this.configs.executionFinishedRegularExpressions;
+	private configs: DebugConfigsProvider;
+	private commands: IDebugCommands;
+	private executionFinishedRegularExpressions: string[];
 
-	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, processProvider?: ProcessProvider) {
+	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, configFilePath: string, processProvider?: ProcessProvider) {
+		// Configuration to interact with external debug process
+		this.configs = new DebugConfigsProvider(configFilePath);
+		this.commands = this.configs.commands
+		this.executionFinishedRegularExpressions = this.configs.executionFinishedRegularExpressions;
+
+		// Spawns the external debug process itself
 		const commandTerminator = this.configs.commandTerminator;
 		this.debugProcess = new SyncProcess(commandLineToStartProcess, commandTerminator, processProvider)
 			.withOutputRedirector(outputRedirector)

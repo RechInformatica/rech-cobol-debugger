@@ -1,9 +1,22 @@
 import * as fs from "fs";
 import * as path from "path";
+import { Configuration } from "../config/Configuration";
 
+/**
+ * Class to provide command names and regular expressions to interact
+ * with external debug process.
+ *
+ * By default, this class loads information from defaultDebugConfigs.json which
+ * is distributed with the project, or loads the .json file path from settings.
+ */
 export class DebugConfigsProvider {
 
-	private _configs: IDebugConfigs = this.loadConfigs();
+	private _configs: IDebugConfigs;
+
+	constructor(externalConfigPath?: string) {
+		const configPath = externalConfigPath ? externalConfigPath : this.buildDefaultConfigsFileName();
+		this._configs = this.loadConfigs(configPath);
+	}
 
 	get commands(): IDebugCommands {
 		return this._configs.commands;
@@ -17,13 +30,12 @@ export class DebugConfigsProvider {
 		return this._configs.commandTerminator;
 	}
 
-	private loadConfigs(): IDebugConfigs {
-		const fileName = this.buildConfigsFileName();
-		const configs = JSON.parse(readFile(fileName));
+	private loadConfigs(filePath: string): IDebugConfigs {
+		const configs = JSON.parse(readFile(filePath));
 		return configs;
 	}
 
-	private buildConfigsFileName(): string {
+	private buildDefaultConfigsFileName(): string {
 		return path.join(__dirname, "..", "..", "defaultDebugConfigs.json");
 	}
 
