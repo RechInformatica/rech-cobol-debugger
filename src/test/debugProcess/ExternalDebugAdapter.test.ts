@@ -24,7 +24,7 @@ describe('External debug adapter', () => {
     });
 
     it('Hits breakpoint on step in without partial filename on step', async () => {
-        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20${path.sep}PDV201.CBL`, line: 75151, output: 'dummy' };
+        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20\\PDV201.CBL`, line: 75151, output: 'dummy' };
         const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new HitBreakpointPartialFileNameProvider());
         const result = await adapter.stepIn();
         expect(expected.file).to.equal(result.file);
@@ -32,7 +32,7 @@ describe('External debug adapter', () => {
     });
 
     it('Hits breakpoint on step in without partial filename with separator on step', async () => {
-        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20${path.sep}PDV201.CBL`, line: 75151, output: 'dummy' };
+        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20\\PDV201.CBL`, line: 75151, output: 'dummy' };
         const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new HitBreakpointPartialFileNameWithSeparatorProvider());
         const result = await adapter.stepIn();
         expect(expected.file).to.equal(result.file);
@@ -40,7 +40,7 @@ describe('External debug adapter', () => {
     });
 
     it('Hits breakpoint on continue without partial filename on step', async () => {
-        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20${path.sep}PDV201.CBL`, line: 75151, output: 'dummy' };
+        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20\\PDV201.CBL`, line: 75151, output: 'dummy' };
         const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, new HitBreakpointPartialFileNameProvider());
         const result = await adapter.continue();
         expect(expected.file).to.equal(result.file);
