@@ -1,0 +1,125 @@
+{
+	"commands": {
+		"currentLineInfo": {
+			"name": "line",
+			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+		},
+		"executeCurrentStatement": {
+			"name": "step",
+			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+		},
+		"stepOutCurrentParagraph": {
+			"name": "outpar",
+			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+		},
+		"stepOutCurrentProgram": {
+			"name": "outprog",
+			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+		},
+		"runToNextProgram": {
+			"name": "prog",
+			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+		},
+		"continueProgramExecution": {
+			"name": "continue",
+			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+		},
+		"executeCurrentStatementAndBlock": {
+			"name": "next",
+			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+		},
+		"suspendProgramExecution": {
+			"name": "pause"
+		},
+		"exitDebug": {
+			"name": "exit"
+		},
+		"requestVariableValue": {
+			"name": "display",
+			"successRegularExpression": "[\\w\\(\\)\\: ]+\\s*=[ ](.*)",
+			"extraRegularExpressions": [
+				"data-item\\s+not\\s+found\\s+",
+				"not\\s+a\\s+Cobol\\s+variable\\s+",
+				"Error\\:\\s+subscript\\s+required",
+				"Error\\:\\s+index\\s+out\\s+of\\s+bounds\\s+",
+				"property\\s+required",
+				"Error:\\s+ambiguous\\s+identifier",
+				"unexpected\\s+error\\s+usage",
+				"syntax\\s+error"
+			]
+		},
+		"changeVariableValue": {
+			"name": "let",
+			"successRegularExpression": "new\\s+value\\s+of\\s+",
+			"extraRegularExpressions": [
+				"not\\s+a\\s+Cobol\\s+variable\\s+",
+				"data-item\\s+not\\s+found\\s+",
+				"boolean\\s+value\\s+required\\s+\\(true\\|false\\)"
+			]
+		},
+		"addVariableMonitor": {
+			"name": "monitor",
+			"successRegularExpression": "add\\s+monitor\\s+on\\s",
+			"extraRegularExpressions": [
+				"data-item\\s+not\\s+found\\s+",
+				"syntax\\s+error",
+				"unexpected\\s+error\\s+usage"
+			]
+		},
+		"removeVariableMonitor": {
+			"name": "unmonitor",
+			"successRegularExpression": "clear\\s+monitor\\s+on",
+			"extraRegularExpressions": [
+				"not\\s+found\\s+monitor\\s+",
+				"unexpected\\s+error\\s+usage"
+			]
+		},
+		"removeAllVariableMonitors": {
+			"name": "unmonitor -a",
+			"successRegularExpression": "clear\\s+all\\s+monitors",
+			"extraRegularExpressions": [
+				"unexpected\\s+error\\s+usage"
+			]
+		},
+		"addBreakpointOnFirstProgramLine": {
+			"name": "b0",
+			"successRegularExpression": "set\\s+breakpoint\\s+at\\s+the\\s+first\\s+line\\s+of\\s+program",
+			"extraRegularExpressions": [
+				"no\\s+such\\s+program",
+				"syntax\\s+error",
+				"unexpected\\s+error\\s+usage"
+			]
+		},
+		"addBreakpointOnLocation": {
+			"name": "break",
+			"successRegularExpression": "set\\sbreakpoint\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s([\\w\\.:\\\/ \\-]+)",
+			"extraRegularExpressions": [
+				"no\\sverb\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s.*",
+				"no\\s+such\\s+file",
+				"no\\s+such\\s+paragraph",
+				"syntax\\s+error",
+				"unexpected\\s+error\\s+usage"
+			]
+		},
+		"removeBreakpointFromLocation": {
+			"name": "clear",
+			"successRegularExpression": "clear\\sbreakpoint\\sat\\sline\\s.*\\,\\sfile\\s.*",
+			"extraRegularExpressions": [
+				"not\\sfound\\sbreakpoint\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s"
+			]
+		},
+		"listBreakpoints": {
+			"name": "break -l",
+			"successRegularExpression": "\\[line:\\s+([0-9]+)\\,\\s+file:\\s+([\\w\\.]+).*\\]"
+		}
+	},
+	"executionFinishedRegularExpressions": [
+		"Usage\\:\\s+isdb\\s+\\[\\-opt1",
+		"java\\.lang\\.NoClassDefFoundError",
+		"Cannot\\s+load\\s+class\\s+",
+		"exit\\s+isdb",
+		"Debugger\\sis\\snot\\ssuspended",
+		"Exception\\s+caught\\s+at\\s+line"
+	],
+	"commandTerminator": "isdb>\\s*$"
+}

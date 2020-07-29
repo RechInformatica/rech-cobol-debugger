@@ -120,15 +120,10 @@ export class CobolDebugSession extends DebugSession {
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
 		const commandLine = (<any>args).commandLine;
 		this.debugRuntime = new ExternalDebugAdapter(commandLine, this.appendOutputToDebugConsole);
-		// Setups debugger
-		this.debugRuntime.setup().then(() => {
-			// Gets information about the first line of source code
-			this.debugRuntime!.start().then((position) => {
-				// Finally, tells VSCode API/UI to position on first line of source code
-				this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
-			}).catch(() => {
-				this.onProblemStartingDebugger(response);
-			});
+		// Gets information about the first line of source code
+		this.debugRuntime.start().then((position) => {
+			// Finally, tells VSCode API/UI to position on first line of source code
+			this.fireDebugLineChangedEvent(position, "stopOnEntry", response);
 		}).catch(() => {
 			this.onProblemStartingDebugger(response);
 		});
@@ -582,8 +577,7 @@ export class CobolDebugSession extends DebugSession {
 	 * @param outData data to be appended
 	 */
 	private appendOutputToDebugConsole(outData: string): void {
-		const finalText = outData.replace(/isdb>\s+/g, "");
-		debug.activeDebugConsole.append(finalText);
+		debug.activeDebugConsole.append(outData);
 	}
 
 	//---- helpers

@@ -14,6 +14,8 @@ export class SyncProcess {
 
 	/** Command which will be executed to launch external process */
 	private command: string = "";
+	/** Set of characters to indicate that a command has finished on external debugging process */
+	private commandTerminator: string = "";
 	/** Implementation to fire commands and interact with external processes */
 	private processProvider: ProcessProvider;
 	/** Last response */
@@ -26,22 +28,15 @@ export class SyncProcess {
 	private outputRedirector: ((output: string) => void) | undefined = undefined;
 
 	/**
-	 * Spawns the external process and returns a new instance of SyncProcess
-	 *
-	 * @param command command to spawn the process
-	 */
-	public static spawn(command: string): SyncProcess {
-		return new SyncProcess(command).spawn();
-	}
-
-	/**
 	 * Creates an instance of SyncProcess with the specified command line
 	 *
 	 * @param command command which will be executed to launch external process
+	 * @param commandTerminator set of characters to indicate that a command has finished on external debugging process
 	 * @param processProvider optional provider to interact with external process
 	 */
-	public constructor(command: string, processProvider?: ProcessProvider) {
+	public constructor(command: string, commandTerminator: string, processProvider?: ProcessProvider) {
 		this.command = command;
+		this.commandTerminator = commandTerminator;
 		this.processProvider = processProvider ? processProvider : new NodeProcessProvider();
 	}
 
@@ -134,7 +129,8 @@ export class SyncProcess {
 	 */
 	private handleCommand(command: Command): void {
 		if (this.responseMatches(this.lastResponse, command.successRegexes)) {
-			if ((/isdb>\s*$/i).test(this.lastResponse)) {
+			const terminatorRegExp = new RegExp(this.commandTerminator, "i");
+			if (terminatorRegExp.test(this.lastResponse)) {
 				command.success(this.lastResponse);
 				this.fireNextCommand();
 				return;

@@ -24,16 +24,18 @@
 			]
 		},
 		{
-			"type": "node",
-			"request": "launch",
-			"name": "Mocha Tests",
-			"program": "${workspaceRoot}/node_modules/mocha/bin/mocha",
 			"args": [
-				"--inspect-brk",
 				"${workspaceFolder}/out/test/**/*.js"
 			],
-			"port": 9229,
-			"internalConsoleOptions": "openOnSessionStart"
+			"internalConsoleOptions": "openOnSessionStart",
+			"name": "Mocha Tests",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+			"request": "launch",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"type": "pwa-node",
+			"outputCapture": "std"
 		},
 		{
 			"type": "node",

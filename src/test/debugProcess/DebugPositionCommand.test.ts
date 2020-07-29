@@ -2,6 +2,12 @@ import { expect } from 'chai';
 import 'mocha';
 import { DebugPositionCommand } from '../../debugProcess/DebugPositionCommand';
 import { DebugPosition } from '../../debugProcess/DebugPosition';
+import { ICommand } from '../../debugProcess/DebugConfigs';
+
+const COMMAND: ICommand = {
+    name: 'line',
+    successRegularExpression: '^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)'
+}
 
 describe('Debug position command', () => {
 
@@ -10,7 +16,7 @@ describe('Debug position command', () => {
             ' line=55680 file=F:/SIGER/20.10a/src/isCOBOL/debug/SRIM00.CBL\n' +
             '              if sig-debug-sim                                                                                              *>   61570      44';
         const expected: DebugPosition = {file: 'F:/SIGER/20.10a/src/isCOBOL/debug/SRIM00.CBL', line: 55680, output: output};
-        const result = new DebugPositionCommand().validateOutput(output);
+        const result = new DebugPositionCommand(COMMAND).validateOutput(output);
         expect(expected.file).to.equal(result!.file);
         expect(expected.line).to.equal(result!.line);
         expect(expected.output).to.equal(result!.output);
@@ -21,7 +27,7 @@ describe('Debug position command', () => {
             ' line=55680 file=SRIM00.CBL\n' +
             '              if sig-debug-sim                                                                                              *>   61570      44';
         const expected: DebugPosition = {file: 'SRIM00.CBL', line: 55680, output: output};
-        const result = new DebugPositionCommand().validateOutput(output);
+        const result = new DebugPositionCommand(COMMAND).validateOutput(output);
         expect(expected.file).to.equal(result!.file);
         expect(expected.line).to.equal(result!.line);
         expect(expected.output).to.equal(result!.output);
@@ -36,7 +42,7 @@ describe('Debug position command', () => {
             ' line=55680 file=F:/SIGER/20.10a/src/isCOBOL/debug/SRIM00.CBL\n' +
             '            if sig-debug-sim                                                                                              *>   61570      44';
         const expected: DebugPosition = {file: 'F:/SIGER/20.10a/src/isCOBOL/debug/SRIM00.CBL', line: 55680, output: output};
-        const result = new DebugPositionCommand().validateOutput(output);
+        const result = new DebugPositionCommand(COMMAND).validateOutput(output);
         expect(expected.file).to.equal(result!.file);
         expect(expected.line).to.equal(result!.line);
         expect(expected.output).to.equal(result!.output);
@@ -50,7 +56,7 @@ describe('Debug position command', () => {
             ' W-SIG-DEBUG [SRIM00] = S\n' +
             ' dummy message instead of line and file\n' +
             '            if sig-debug-sim                                                                                              *>   61570      44';
-        const result = new DebugPositionCommand().validateOutput(output);
+        const result = new DebugPositionCommand(COMMAND).validateOutput(output);
         expect(undefined).to.equal(result);
     });
 
