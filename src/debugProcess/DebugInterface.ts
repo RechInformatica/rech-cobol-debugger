@@ -6,11 +6,6 @@ import { CobolMonitor } from "../monitor/CobolMonitor";
 export interface DebugInterface {
 
 	/**
-	 * Setups debugger execution
-	 */
-	setup(): Promise<DebugPosition>;
-
-	/**
 	 * Starts debugger returning the information of it's first line
 	 */
 	start(): Promise<DebugPosition>;

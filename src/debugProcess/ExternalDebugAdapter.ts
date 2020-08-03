@@ -16,6 +16,7 @@ import { ProcessProvider } from "./ProcessProvider";
 import * as path from "path";
 import { AddBreakpointOnFirstLineCommand } from "./AddBreakpointOnFirstLineCommand";
 import { UnmonitorAllCommand } from "./UnmonitorAllCommand";
+import { DebugConfigsProvider, ICommand, IDebugCommands } from "./DebugConfigs";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -25,64 +26,78 @@ export class ExternalDebugAdapter implements DebugInterface {
 	/** External COBOL debugger process */
 	private debugProcess: SyncProcess;
 
-	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, processProvider?: ProcessProvider) {
-		this.debugProcess = new SyncProcess(commandLineToStartProcess, processProvider)
+	/** Debug configuration */
+	private configs: DebugConfigsProvider;
+	private commands: IDebugCommands;
+	private executionFinishedRegularExpressions: string[];
+
+	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, configFilePath: string, processProvider?: ProcessProvider) {
+		// Configuration to interact with external debug process
+		this.configs = new DebugConfigsProvider(configFilePath);
+		this.commands = this.configs.commands
+		this.executionFinishedRegularExpressions = this.configs.executionFinishedRegularExpressions;
+
+		// Spawns the external debug process itself
+		const commandTerminator = this.configs.commandTerminator;
+		this.debugProcess = new SyncProcess(commandLineToStartProcess, commandTerminator, processProvider)
 			.withOutputRedirector(outputRedirector)
 			.spawn();
 	}
 
-	setup(): Promise<DebugPosition> {
-		// These regular expressions can only appear at startup, when user
-		// does not specify any parameter to external debugger through
-		// command-line or specifies an invalid file to start debugging
-		return this.sendDebugPositionCommand("", [/Usage\:\s+isdb\s+\[\-opt1/i, /java\.lang\.NoClassDefFoundError/i, /Cannot\s+load\s+class\s+/i]);
-	}
-
 	start(): Promise<DebugPosition> {
-		return this.sendDebugPositionCommand("line");
+		return new Promise((resolve, reject) => {
+			// Calls this command twice because debugger startup may show only filename without path,
+			// on the first time this command is called
+			this.sendDebugPositionCommand(this.commands.currentLineInfo)
+				.then(() => {
+					this.sendDebugPositionCommand(this.commands.currentLineInfo)
+						.then(position => resolve(position))
+						.catch(err => reject(err));
+				}).catch(err => reject(err));
+		});
 	}
 
 	stepIn(): Promise<DebugPosition> {
-		return this.sendDebugPositionCommand("step");
+		return this.sendDebugPositionCommand(this.commands.executeCurrentStatement);
 	}
 
 	stepOut(): Promise<DebugPosition> {
-		return this.sendDebugPositionCommand("outpar");
+		return this.sendDebugPositionCommand(this.commands.stepOutCurrentParagraph);
 	}
 
 	stepOutProgram(): Promise<DebugPosition> {
-		return this.sendDebugPositionCommand("outprog");
+		return this.sendDebugPositionCommand(this.commands.stepOutCurrentProgram);
 	}
 
 	runToNextProgram(): Promise<DebugPosition> {
-		return this.sendDebugPositionCommand("prog");
+		return this.sendDebugPositionCommand(this.commands.runToNextProgram);
 	}
 
 	continue(): Promise<DebugPosition> {
-		return this.sendDebugPositionCommand("continue");
+		return this.sendDebugPositionCommand(this.commands.continueProgramExecution);
 	}
 
 	next(): Promise<DebugPosition> {
-		return this.sendDebugPositionCommand("next");
+		return this.sendDebugPositionCommand(this.commands.executeCurrentStatementAndBlock);
 	}
 
 	pause(): void {
-		this.debugProcess.writeComanndToProcessInput("pause");
+		this.debugProcess.writeComanndToProcessInput(this.commands.suspendProgramExecution.name);
 	}
 
 	stop(): void {
-		this.debugProcess.writeComanndToProcessInput("exit");
+		this.debugProcess.writeComanndToProcessInput(this.commands.exitDebug.name);
 	}
 
 	requestVariableValue(args: string): Promise<string | undefined> {
-		return new Promise(async (resolve, reject) => {
+		return new Promise((resolve, reject) => {
 			if (args.trim().length === 0) {
 				return reject("Empty variable name");
 			}
-			const cmd = new RequestVariableValueCommand();
+			const cmd = new RequestVariableValueCommand(this.commands.requestVariableValue);
 			this.sendCommand(cmd.buildCommand(args), cmd.getExpectedRegExes()).then((output) => {
 				return resolve(cmd.validateOutput(output));
-			}).catch(async (error) => {
+			}).catch((error) => {
 				return reject(error);
 			});
 		});
@@ -90,8 +105,8 @@ export class ExternalDebugAdapter implements DebugInterface {
 
 	changeVariableValue(variable: string, newValue: string): Promise<boolean> {
 		return new Promise((resolve, reject) => {
-			const cmd = new ChangeVariableValueCommand();
-			const commandLine = cmd.buildCommand({name: variable, value: newValue});
+			const cmd = new ChangeVariableValueCommand(this.commands.changeVariableValue);
+			const commandLine = cmd.buildCommand({ name: variable, value: newValue });
 			const regexes = cmd.getExpectedRegExes();
 			this.sendCommand(commandLine, regexes).then((output) => {
 				return resolve(cmd.validateOutput(output));
@@ -103,7 +118,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 
 	addMonitor(monitor: CobolMonitor): Promise<boolean> {
 		return new Promise((resolve, reject) => {
-			const cmd = new MonitorCommand();
+			const cmd = new MonitorCommand(this.commands.addVariableMonitor);
 			this.sendCommand(cmd.buildCommand(monitor), cmd.getExpectedRegExes()).then((output) => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((e) => {
@@ -114,7 +129,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 
 	removeMonitor(variable: string): Promise<boolean> {
 		return new Promise((resolve, reject) => {
-			const cmd = new UnmonitorCommand();
+			const cmd = new UnmonitorCommand(this.commands.removeVariableMonitor);
 			this.sendCommand(cmd.buildCommand(variable), cmd.getExpectedRegExes()).then((output) => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((e) => {
@@ -125,7 +140,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 
 	removeAllMonitors(): Promise<boolean> {
 		return new Promise((resolve, reject) => {
-			const cmd = new UnmonitorAllCommand();
+			const cmd = new UnmonitorAllCommand(this.commands.removeAllVariableMonitors);
 			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then((output) => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((e) => {
@@ -136,7 +151,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 
 
 	addBreakpoint(br: CobolBreakpoint): Promise<string> {
-		return this.addBreakpointOnLocation({paragraph: `${br.line}`, source: br.source, condition: br.condition});
+		return this.addBreakpointOnLocation({ paragraph: `${br.line}`, source: br.source, condition: br.condition });
 	}
 
 	addParagraphBreakpoint(br: CobolParagraphBreakpoint): Promise<string> {
@@ -144,68 +159,67 @@ export class ExternalDebugAdapter implements DebugInterface {
 	}
 
 	addBreakpointOnFirstLine(program: string): Promise<boolean> {
-		return new Promise(async (resolve, reject) => {
-			const cmd = new AddBreakpointOnFirstLineCommand();
+		return new Promise((resolve, reject) => {
+			const cmd = new AddBreakpointOnFirstLineCommand(this.commands.addBreakpointOnFirstProgramLine);
 			this.sendCommand(cmd.buildCommand(program), cmd.getExpectedRegExes()).then((output) => {
 				return resolve(cmd.validateOutput(output));
-			}).catch(async (error) => {
+			}).catch((error) => {
 				return reject(error);
 			});
 		});
 	}
 
 	private addBreakpointOnLocation(br: CobolParagraphBreakpoint): Promise<string> {
-		return new Promise(async (resolve, reject) => {
-			const cmd = new AddBreakpointCommand();
+		return new Promise((resolve, reject) => {
+			const cmd = new AddBreakpointCommand(this.commands.addBreakpointOnLocation);
 			this.sendCommand(cmd.buildCommand(br), cmd.getExpectedRegExes()).then((output) => {
 				return resolve(cmd.validateOutput(output));
-			}).catch(async (error) => {
+			}).catch((error) => {
 				return reject(error);
 			});
 		});
 	}
 
 	listBreakpoints(): Promise<CobolBreakpoint[]> {
-		return new Promise(async (resolve, reject) => {
-			const cmd = new ListBreakpointsCommand();
+		return new Promise((resolve, reject) => {
+			const cmd = new ListBreakpointsCommand(this.commands.listBreakpoints);
 			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then((output) => {
 				return resolve(cmd.validateOutput(output));
-			}).catch(async (error) => {
+			}).catch((error) => {
 				return reject(error);
 			});
 		});
 	}
 
 	removeBreakpoint(br: CobolBreakpoint): Promise<boolean> {
-		return new Promise(async (resolve, reject) => {
-			const cmd = new RemoveBreakpointCommand();
+		return new Promise((resolve, reject) => {
+			const cmd = new RemoveBreakpointCommand(this.commands.removeBreakpointFromLocation);
 			this.sendCommand(cmd.buildCommand(br), cmd.getExpectedRegExes()).then((output) => {
 				return resolve(cmd.validateOutput(output));
-			}).catch(async (error) => {
+			}).catch((error) => {
 				return reject(error);
 			});
 		});
 	}
 
-    sendRawCommand(command: string): void {
+	sendRawCommand(command: string): void {
 		this.debugProcess.writeComanndToProcessInput(command);
 	}
 
 	/**
 	 * Sends a command which will return the new debug position within source code
 	 *
-	 * @param commandName command to be fired
-	 * @param extraFailRegexes extra regular expressions indicating problems from output
+	 * @param command command to be fired
 	 */
-	private sendDebugPositionCommand(commandName: string, extraFailRegexes?: RegExp[]): Promise<DebugPosition> {
-		return new Promise(async (resolve, reject) => {
-			const cmd = new DebugPositionCommand();
-			this.sendCommand(cmd.buildCommand(commandName), cmd.getExpectedRegExes(), extraFailRegexes).then((output) => {
+	private sendDebugPositionCommand(command: ICommand): Promise<DebugPosition> {
+		return new Promise((resolve, reject) => {
+			const cmd = new DebugPositionCommand(command);
+			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then((output) => {
 				const position = cmd.validateOutput(output);
 				// Checks whether the debugger returned a valid debugging position
 				if (position) {
-					// // If the position already contains file name with directory, we don't
-					// // need to look for the current directory of the process
+					// If the position already contains file name with directory, we don't
+					// need to look for the current directory of the process
 					if (position.file.includes("\\") || position.file.includes("/")) {
 						//
 						// Simply returns the position, since it contains the full path to the file.
@@ -262,12 +276,9 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 * @param command command to be fired
 	 * @param expectedRegexes regular expressions to match debugger output
 	 */
-	private async sendCommand(command: string, expectedRegexes: RegExp[], extraFailRegexes?: RegExp[]): Promise<string> {
-		return new Promise(async (resolve, reject) => {
-			const failRegexes: RegExp[] = [/exit\s+isdb/i, /Debugger\sis\snot\ssuspended/i, /Exception\s+caught\s+at\s+line/i];
-			if (extraFailRegexes) {
-				extraFailRegexes.forEach(r => failRegexes.push(r));
-			}
+	private sendCommand(command: string, expectedRegexes: RegExp[]): Promise<string> {
+		return new Promise((resolve, reject) => {
+			const failRegexes: RegExp[] = this.createRegExpArray(this.executionFinishedRegularExpressions);
 			this.debugProcess.sendCommand({
 				command: command,
 				successRegexes: expectedRegexes,
@@ -276,6 +287,14 @@ export class ExternalDebugAdapter implements DebugInterface {
 				fail: (output: string) => reject(output)
 			});
 		});
+	}
+
+	private createRegExpArray(textRegExp: string[]): RegExp[] {
+		const result: RegExp[] = [];
+		textRegExp.forEach(current => {
+			result.push(new RegExp(current, "i"))
+		});
+		return result;
 	}
 
 }

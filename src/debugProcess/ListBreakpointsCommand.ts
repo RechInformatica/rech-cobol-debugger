@@ -1,5 +1,7 @@
 import { DebugCommand } from "./DebugCommand";
 import { CobolBreakpoint } from "../breakpoint/CobolBreakpoint";
+import { ICommand } from "./DebugConfigs";
+import { GenericDebugCommand } from "./GenericDebugCommand";
 
 /** Index where filename can be found on regular expression of list command */
 const FILENAME_LIST_CMD_OUTPUT = 2;
@@ -9,12 +11,14 @@ const FILENAME_LIST_CMD_OUTPUT = 2;
  */
 export class ListBreakpointsCommand implements DebugCommand<void, CobolBreakpoint[]> {
 
+	constructor(private command: ICommand) { }
+
 	buildCommand(): string {
-		return "break -l";
+		return this.command.name;
 	}
 
 	getExpectedRegExes(): RegExp[] {
-		return [/\[line(\s|.)*isdb>/mi];
+		return new GenericDebugCommand(this.command).getExpectedRegExes();
 	}
 
 	validateOutput(output: string): CobolBreakpoint[] {
@@ -29,12 +33,15 @@ export class ListBreakpointsCommand implements DebugCommand<void, CobolBreakpoin
 	 */
 	private extractBreaksFromListOutput(output: string): CobolBreakpoint[] {
 		const breaks: CobolBreakpoint[] = [];
-		const regex = /\[line:\s+([0-9]+)\,\s+file:\s+([\w\.]+).*\]/gi;
-		let result: RegExpExecArray | null = null;
-		while ((result = regex.exec(output)) !== null) {
-			const line = +result[1];
-			const source = result[FILENAME_LIST_CMD_OUTPUT];
-			breaks.push({line: line, source: source});
+		const successRegExp = this.command.successRegularExpression;
+		const regex = successRegExp ? new RegExp(successRegExp, "gi") : undefined;
+		if (regex) {
+			let result: RegExpExecArray | null = null;
+			while ((result = regex.exec(output)) !== null) {
+				const line = +result[1];
+				const source = result[FILENAME_LIST_CMD_OUTPUT];
+				breaks.push({ line: line, source: source });
+			}
 		}
 		return breaks;
 	}

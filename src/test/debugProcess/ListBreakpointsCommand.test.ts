@@ -2,6 +2,12 @@ import { expect } from 'chai';
 import 'mocha';
 import { CobolBreakpoint } from '../../breakpoint/CobolBreakpoint';
 import { ListBreakpointsCommand } from '../../debugProcess/ListBreakpointsCommand';
+import { ICommand } from '../../debugProcess/DebugConfigs';
+
+const COMMAND: ICommand = {
+    name: 'break -l',
+    successRegularExpression: '\\[line:\\s+([0-9]+)\\,\\s+file:\\s+([\\w\\.]+).*\\]'
+}
 
 describe('List breakpoints command', () => {
 
@@ -34,7 +40,7 @@ describe('List breakpoints command', () => {
                 source: 'srhgnf.cbl'
             }
         ];
-        const result = new ListBreakpointsCommand().validateOutput(output);
+        const result = new ListBreakpointsCommand(COMMAND).validateOutput(output);
         expect(expected.length).to.equal(result.length);
         for (let i = 0; i < result.length; i++) {
             expect(expected[i].line).to.equal(result[i].line);
@@ -67,7 +73,7 @@ describe('List breakpoints command', () => {
                 source: 'srhgnf.cbl'
             }
         ];
-        const result = new ListBreakpointsCommand().validateOutput(output);
+        const result = new ListBreakpointsCommand(COMMAND).validateOutput(output);
         expect(expected.length).to.equal(result.length);
         for (let i = 0; i < result.length; i++) {
             expect(expected[i].line).to.equal(result[i].line);
@@ -77,7 +83,7 @@ describe('List breakpoints command', () => {
 
     it('List with empty output', () => {
         const output = '   ';
-        const result = new ListBreakpointsCommand().validateOutput(output);
+        const result = new ListBreakpointsCommand(COMMAND).validateOutput(output);
         expect(0).to.equal(result.length);
     });
 

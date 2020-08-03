@@ -1,5 +1,7 @@
 import { DebugCommand } from "./DebugCommand";
 import { DebugPosition } from "./DebugPosition";
+import { ICommand } from "./DebugConfigs";
+import { GenericDebugCommand } from "./GenericDebugCommand";
 
 /** Index inside match where the line number can be extracted */
 const MATCH_LINE_INDEX = 1;
@@ -9,19 +11,23 @@ const MATCH_FILE_INDEX = 2;
 /**
  * Class to handle several commands which return a debug position
  */
-export class DebugPositionCommand implements DebugCommand<string, DebugPosition | undefined> {
+export class DebugPositionCommand implements DebugCommand<void, DebugPosition | undefined> {
 
-	buildCommand(commandLine: string): string {
+	constructor(private command: ICommand) { }
+
+	buildCommand(): string {
 		// returns the command itself because this class is used for several commands
-		return commandLine;
+		return this.command.name;
 	}
 
 	getExpectedRegExes(): RegExp[] {
-		return [this.createDebugPositionRegex()];
+		const result = new GenericDebugCommand(this.command).getExpectedRegExes("im");
+		return result;
 	}
 
 	validateOutput(output: string): DebugPosition | undefined {
-		const match = this.createDebugPositionRegex().exec(output);
+		const successRegExp = this.command.successRegularExpression;
+		const match = successRegExp ? new RegExp(successRegExp, "im").exec(output) : undefined;
 		if (match && match.length > MATCH_FILE_INDEX) {
 			return ({
 				file: match[MATCH_FILE_INDEX],
@@ -30,13 +36,6 @@ export class DebugPositionCommand implements DebugCommand<string, DebugPosition 
 			});
 		}
 		return undefined;
-	}
-
-	/**
-	 * Creates a regular expression to extract debug position from debugger output
-	 */
-	private createDebugPositionRegex(): RegExp {
-		return /^\+*\s+line=(\d+)\s+file=([\w\.:\\\/ \-]+)/im;
 	}
 
 }

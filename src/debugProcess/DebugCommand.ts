@@ -4,7 +4,9 @@
 export interface DebugCommand<T, K> {
 
 	/**
-	 * Builds the command which will be sent to external debugger process.
+	 * Builds the full command which will be sent to external debugger process.
+	 *
+	 * @param info additional information to build the full command
 	 */
 	buildCommand(info: T): string;
 
