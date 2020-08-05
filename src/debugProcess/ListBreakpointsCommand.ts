@@ -2,9 +2,7 @@ import { DebugCommand } from "./DebugCommand";
 import { CobolBreakpoint } from "../breakpoint/CobolBreakpoint";
 import { ICommand } from "./DebugConfigs";
 import { GenericDebugCommand } from "./GenericDebugCommand";
-
-/** Index where filename can be found on regular expression of list command */
-const FILENAME_LIST_CMD_OUTPUT = 2;
+import { PATH_NAMED_GROUP, LINE_NAMED_GROUP } from "./PositionConstants";
 
 /**
  * Class to handle list breakpoints command
@@ -38,9 +36,15 @@ export class ListBreakpointsCommand implements DebugCommand<void, CobolBreakpoin
 		if (regex) {
 			let result: RegExpExecArray | null = null;
 			while ((result = regex.exec(output)) !== null) {
-				const line = +result[1];
-				const source = result[FILENAME_LIST_CMD_OUTPUT];
-				breaks.push({ line: line, source: source });
+				const groups = result.groups;
+				if (groups) {
+					const file = groups[PATH_NAMED_GROUP];
+					const line = groups[LINE_NAMED_GROUP];
+					breaks.push({
+						line: new Number(line).valueOf(),
+						source: file
+					});
+				}
 			}
 		}
 		return breaks;

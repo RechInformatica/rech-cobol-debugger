@@ -2,31 +2,31 @@
 	"commands": {
 		"currentLineInfo": {
 			"name": "line",
-			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 		"executeCurrentStatement": {
 			"name": "step",
-			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 		"stepOutCurrentParagraph": {
 			"name": "outpar",
-			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 		"stepOutCurrentProgram": {
 			"name": "outprog",
-			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 		"runToNextProgram": {
 			"name": "prog",
-			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 		"continueProgramExecution": {
 			"name": "continue",
-			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 		"executeCurrentStatementAndBlock": {
 			"name": "next",
-			"successRegularExpression": "^\\+*\\s+line=(\\d+)\\s+file=([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 		"suspendProgramExecution": {
 			"name": "pause"
@@ -92,7 +92,7 @@
 		},
 		"addBreakpointOnLocation": {
 			"name": "break",
-			"successRegularExpression": "set\\sbreakpoint\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s([\\w\\.:\\\/ \\-]+)",
+			"successRegularExpression": "set\\sbreakpoint\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s(?<path>[\\w\\.:\\\/ \\-]+)",
 			"extraRegularExpressions": [
 				"no\\sverb\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s.*",
 				"no\\s+such\\s+file",
@@ -110,7 +110,7 @@
 		},
 		"listBreakpoints": {
 			"name": "break -l",
-			"successRegularExpression": "\\[line:\\s+([0-9]+)\\,\\s+file:\\s+([\\w\\.]+).*\\]"
+			"successRegularExpression": "\\[line:\\s+(?<linenumber>[0-9]+)\\,\\s+file:\\s+(?<path>[\\w\\.]+).*\\]"
 		}
 	},
 	"executionFinishedRegularExpressions": [

@@ -25,17 +25,17 @@ Here is an example of configuration for COBOL 'A':
 
 		"executeCurrentStatement": {
 			"name": "step",
-			"successRegularExpression": "\\s+Current\\s+statement:\\s+line:(\\d+)\\s+->\\s+([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "\\s+Current\\s+statement:\\s+line:(?<linenumber>\\d+)\\s+->\\s+(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 
 Here is an example of configuration for COBOL 'B':
 
 		"executeCurrentStatement": {
 			"name": "execute",
-			"successRegularExpression": "\\s+Stopped\s+at\s+line\s+(\d+)\s+and\s+file\s+([\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "\\s+Stopped\s+at\s+line\s+(?<linenumber>\d+)\s+and\s+file\s+(?<path>[\\w\\.:\\\/ \\-]+)"
 		},
 
-**IMPORTANT**: remember that, on JSON files, you need to escape backslash with another backslash, so this is why '\\\\s+' appears with double backslash. Also notice that some commands, like the one shown above, requires regular expression groups on the exact order: first group related to line number and second group related to file path. If you specify a custom regular expression, be careful with the position of the groups.
+**IMPORTANT**: remember that, on JSON files, you need to escape backslash with another backslash, so this is why '\\\\s+' appears with double backslash. Also notice that some commands, like the one shown above, requires regular expression with named groups: group 'linenumber' is related to line number and group 'path' is related to file path. If you specify a custom regular expression, please keep the groups with these names, although they don't need to be in any specific order.
 
 The default configuration file is *defaultDebugConfigs.json* located on project root. To provide custom commands, copy this file to any folder on your computer, rename the way you prefer and define the path to this file at **rech.cobol.debug.externalDebugConfigs** setting.
 

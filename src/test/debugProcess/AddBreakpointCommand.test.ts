@@ -5,7 +5,7 @@ import { ICommand } from '../../debugProcess/DebugConfigs';
 
 const COMMAND: ICommand = {
     name: 'break',
-    successRegularExpression: 'set\\sbreakpoint\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s([\\w\\.:\\\/ \\-]+)',
+    successRegularExpression: 'set\\sbreakpoint\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s(?<path>[\\w\\.:\\\/ \\-]+)',
     extraRegularExpressions: [
         'no\\sverb\\s(at|in)\\s(line|paragraph)\\s.*\\,\\sfile\\s.*',
         'no\\s+such\\s+file',

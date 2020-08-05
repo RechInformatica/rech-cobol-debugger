@@ -3,9 +3,7 @@ import { CobolParagraphBreakpoint } from "../breakpoint/CobolParagraphBreakpoint
 import { CommandUtils } from "./CommandUtils";
 import { ICommand } from "./DebugConfigs";
 import { GenericDebugCommand } from "./GenericDebugCommand";
-
-/** Index where filename can be found on regular expression of breakpoint commands */
-const FILENAME_BREAKPOINT_CMD_OUTPUT = 3;
+import { PATH_NAMED_GROUP } from "./PositionConstants";
 
 /**
  * Class to handle command to add breakpoint
@@ -28,12 +26,13 @@ export class AddBreakpointCommand implements DebugCommand<CobolParagraphBreakpoi
 			return undefined;
 		}
 		const regexResult = new RegExp(this.command.successRegularExpression, "i").exec(output);
-		if (regexResult) {
+		if (regexResult && regexResult.groups) {
 			// Returns the breakpoint full filename
-			return regexResult[FILENAME_BREAKPOINT_CMD_OUTPUT];
-		} else {
-			return undefined;
+			const groups = regexResult.groups;
+			const filePath = groups[PATH_NAMED_GROUP];
+			return filePath;
 		}
+		return undefined;
 	}
 
 	/**

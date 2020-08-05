@@ -2,11 +2,7 @@ import { DebugCommand } from "./DebugCommand";
 import { DebugPosition } from "./DebugPosition";
 import { ICommand } from "./DebugConfigs";
 import { GenericDebugCommand } from "./GenericDebugCommand";
-
-/** Index inside match where the line number can be extracted */
-const MATCH_LINE_INDEX = 1;
-/** Index inside match where the file name can be extracted */
-const MATCH_FILE_INDEX = 2;
+import { PATH_NAMED_GROUP, LINE_NAMED_GROUP } from "./PositionConstants";
 
 /**
  * Class to handle several commands which return a debug position
@@ -28,12 +24,17 @@ export class DebugPositionCommand implements DebugCommand<void, DebugPosition | 
 	validateOutput(output: string): DebugPosition | undefined {
 		const successRegExp = this.command.successRegularExpression;
 		const match = successRegExp ? new RegExp(successRegExp, "im").exec(output) : undefined;
-		if (match && match.length > MATCH_FILE_INDEX) {
-			return ({
-				file: match[MATCH_FILE_INDEX],
-				line: new Number(match[MATCH_LINE_INDEX]).valueOf(),
-				output: output
-			});
+		if (match && match.groups) {
+			const groups = match.groups;
+			const file = groups[PATH_NAMED_GROUP];
+			const line = groups[LINE_NAMED_GROUP];
+			if (file && line) {
+				return ({
+					file: file,
+					line: new Number(line).valueOf(),
+					output: output
+				});
+			}
 		}
 		return undefined;
 	}
