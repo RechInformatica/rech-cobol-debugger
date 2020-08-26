@@ -208,11 +208,16 @@ export class SyncProcess {
 	 */
 	private traceOperation(buffer: string): void {
 		if (this.traceFilePath) {
-			if (this.firstTimeTracing) {
-				fs.writeFileSync(this.traceFilePath, buffer);
-				this.firstTimeTracing = false;
-			} else {
-				fs.appendFileSync(this.traceFilePath, buffer);
+			try {
+				if (this.firstTimeTracing) {
+					fs.writeFileSync(this.traceFilePath, buffer);
+					this.firstTimeTracing = false;
+				} else {
+					fs.appendFileSync(this.traceFilePath, buffer);
+				}
+			} catch (err) {
+				const errorMessage = err ? err.toString() : "Unknown error detected on SyncProcess while writing trace";
+				this.redirectOutput("Error detected while writing trace to file " + this.traceFilePath + ": " + errorMessage + "\n");
 			}
 		}
 	}
