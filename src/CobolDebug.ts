@@ -122,7 +122,8 @@ export class CobolDebugSession extends DebugSession {
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
 		const commandLine = (<any>args).commandLine;
 		const configFilePath = this.locateConfiguredDebugFile();
-		this.debugRuntime = new ExternalDebugAdapter(commandLine, this.appendOutputToDebugConsole, configFilePath);
+		const traceFilePath = this.locateTraceFile();
+		this.debugRuntime = new ExternalDebugAdapter(commandLine, this.appendOutputToDebugConsole, configFilePath, traceFilePath);
 		// Gets information about the first line of source code
 		this.debugRuntime.start().then((position) => {
 			// Finally, tells VSCode API/UI to position on first line of source code
@@ -139,6 +140,12 @@ export class CobolDebugSession extends DebugSession {
 			return "";
 		}
 		return configuredPath;
+	}
+
+	private locateTraceFile(): string {
+		const configuration = new Configuration("rech.cobol.debug")
+		const traceFile = configuration.get<string>("traceFile");
+		return traceFile;
 	}
 
 	private onProblemStartingDebugger(response: DebugProtocol.LaunchResponse): void {
