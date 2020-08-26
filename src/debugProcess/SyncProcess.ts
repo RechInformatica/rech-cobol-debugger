@@ -1,6 +1,6 @@
-import { debug } from "vscode";
 import { NodeProcessProvider } from "./NodeProcessProvider";
 import { ProcessProvider } from "./ProcessProvider";
+import * as fs from 'fs';
 
 /**
  * Class to run commands on external process.
@@ -26,6 +26,10 @@ export class SyncProcess {
 	private commandQueue: Command[] = [];
 	/** Function which receives/redirects every process output */
 	private outputRedirector: ((output: string) => void) | undefined = undefined;
+	/** Optional trace file to log every interaction with external command-line debugger */
+	private traceFilePath: string | undefined;
+	/** Controls whether it's the first time the extension is writing trace to disk on this debug execution */
+	private firstTimeTracing: boolean = true;
 
 	/**
 	 * Creates an instance of SyncProcess with the specified command line
@@ -47,6 +51,16 @@ export class SyncProcess {
 	 */
 	public withOutputRedirector(outputRedirector: (output: string) => void): SyncProcess {
 		this.outputRedirector = outputRedirector;
+		return this;
+	}
+
+	/**
+	 * Configures the trace file to log every interaction with external command-line debugger
+	 *
+	 * @param traceFilePath
+	 */
+	public withTraceFilePath(traceFilePath: string): SyncProcess {
+		this.traceFilePath = traceFilePath;
 		return this;
 	}
 
@@ -93,6 +107,7 @@ export class SyncProcess {
 	 */
 	private handleOutput(outData: string): void {
 		this.redirectOutput(outData);
+		this.traceOperation(outData);
 		this.lastResponse = this.lastResponse + outData;
 		const currentCommand = this.getAvailableCommand();
 		if (currentCommand) {
@@ -182,9 +197,25 @@ export class SyncProcess {
 	 */
 	public writeComanndToProcessInput(command: string): void {
 		const fullCommand = command + "\n";
+		this.traceOperation(fullCommand);
 		this.processProvider.write(fullCommand);
 	}
 
+	/**
+	 * Traces the operation on an external trace file when needed
+	 *
+	 * @param buffer buffer to trace
+	 */
+	private traceOperation(buffer: string): void {
+		if (this.traceFilePath) {
+			if (this.firstTimeTracing) {
+				fs.writeFileSync(this.traceFilePath, buffer);
+				this.firstTimeTracing = false;
+			} else {
+				fs.appendFileSync(this.traceFilePath, buffer);
+			}
+		}
+	}
 }
 
 /**

@@ -31,7 +31,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	private commands: IDebugCommands;
 	private executionFinishedRegularExpressions: string[];
 
-	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, configFilePath: string, processProvider?: ProcessProvider) {
+	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, configFilePath: string, traceFilePath: string, processProvider?: ProcessProvider) {
 		// Configuration to interact with external debug process
 		this.configs = new DebugConfigsProvider(configFilePath);
 		this.commands = this.configs.commands
@@ -41,6 +41,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 		const commandTerminator = this.configs.commandTerminator;
 		this.debugProcess = new SyncProcess(commandLineToStartProcess, commandTerminator, processProvider)
 			.withOutputRedirector(outputRedirector)
+			.withTraceFilePath(traceFilePath)
 			.spawn();
 	}
 
