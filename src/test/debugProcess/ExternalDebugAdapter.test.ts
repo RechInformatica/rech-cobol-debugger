@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import 'mocha';
-import * as path from "path";
 import { ExternalDebugAdapter } from '../../debugProcess/ExternalDebugAdapter';
 import { ProcessProvider } from '../../debugProcess/ProcessProvider';
 import { DebugPosition } from '../../debugProcess/DebugPosition';
@@ -19,30 +18,6 @@ describe('External debug adapter', () => {
         const expected: DebugPosition = { file: 'F:/SIGER/wc/DES/lucas-camargo/src/isCOBOL/debug/PDV201.CBL', line: 75151, output: 'dummy' };
         const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, "", "", new HitBreakpointProvider());
         const result = await adapter.stepIn();
-        expect(expected.file).to.equal(result.file);
-        expect(expected.line).to.equal(result.line);
-    });
-
-    it('Hits breakpoint on step in without partial filename on step', async () => {
-        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20${path.sep}PDV201.CBL`, line: 75151, output: 'dummy' };
-        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, "", "", new HitBreakpointPartialFileNameProvider());
-        const result = await adapter.stepIn();
-        expect(expected.file).to.equal(result.file);
-        expect(expected.line).to.equal(result.line);
-    });
-
-    it('Hits breakpoint on step in without partial filename with separator on step', async () => {
-        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20${path.sep}PDV201.CBL`, line: 75151, output: 'dummy' };
-        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, "", "", new HitBreakpointPartialFileNameWithSeparatorProvider());
-        const result = await adapter.stepIn();
-        expect(expected.file).to.equal(result.file);
-        expect(expected.line).to.equal(result.line);
-    });
-
-    it('Hits breakpoint on continue without partial filename on step', async () => {
-        const expected: DebugPosition = { file: `C:\\Bases\\Amcm\\20.20${path.sep}PDV201.CBL`, line: 75151, output: 'dummy' };
-        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, "", "", new HitBreakpointPartialFileNameProvider());
-        const result = await adapter.continue();
         expect(expected.file).to.equal(result.file);
         expect(expected.line).to.equal(result.line);
     });
@@ -188,48 +163,6 @@ class HitBreakpointProvider extends BaseMockProvider {
             ' line=75151 file=F:/SIGER/wc/DES/lucas-camargo/src/isCOBOL/debug/PDV201.CBL\n' +
             '         pcpr-configuracao.                                                                                                *>  107606     780\n' +
             'isdb>';
-    }
-
-}
-
-enum Stage { Step, GetCurrentDirectory };
-
-class HitBreakpointPartialFileNameProvider extends BaseMockProvider {
-
-    private stage: Stage = Stage.Step;
-
-    getOutputContent(): string {
-        if (this.stage == Stage.Step) {
-            this.stage = Stage.GetCurrentDirectory;
-            return ' \n' +
-                ' + hit breakpoint in paragraph PCPR-CONFIGURACAO, file PDV201.CBL\n' +
-                ' line=75151 file=PDV201.CBL\n' +
-                '         pcpr-configuracao.                                                                                                *>  107606     780\n' +
-                'isdb>';
-        }
-        return ' \n' +
-        ' + user.dir =  C:\\Bases\\Amcm\\20.20 \n' +
-        'isdb>';
-    }
-
-}
-
-class HitBreakpointPartialFileNameWithSeparatorProvider extends BaseMockProvider {
-
-    private stage: Stage = Stage.Step;
-
-    getOutputContent(): string {
-        if (this.stage == Stage.Step) {
-            this.stage = Stage.GetCurrentDirectory;
-            return ' \n' +
-                ' + hit breakpoint in paragraph PCPR-CONFIGURACAO, file PDV201.CBL\n' +
-                ' line=75151 file=PDV201.CBL\n' +
-                '         pcpr-configuracao.                                                                                                *>  107606     780\n' +
-                'isdb>';
-        }
-        return ' \n' +
-        ' + user.dir =  C:\\Bases\\Amcm\\20.20\\ \n' +
-        'isdb>';
     }
 
 }

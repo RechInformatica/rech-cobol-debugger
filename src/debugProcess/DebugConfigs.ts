@@ -73,6 +73,7 @@ export interface IDebugCommands {
 	addVariableMonitor: ICommand
 	removeVariableMonitor: ICommand
 	removeAllVariableMonitors: ICommand
+	requestAvailableSourceDirectories?: ICommand
 }
 
 export interface ICommand {
