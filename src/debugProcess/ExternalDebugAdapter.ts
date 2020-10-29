@@ -13,10 +13,11 @@ import { ChangeVariableValueCommand } from "./ChangeVariableValueCommand";
 import { RequestVariableValueCommand } from "./RequestVariableValue";
 import { DebugPositionCommand } from "./DebugPositionCommand";
 import { ProcessProvider } from "./ProcessProvider";
-import * as path from "path";
 import { AddBreakpointOnFirstLineCommand } from "./AddBreakpointOnFirstLineCommand";
 import { UnmonitorAllCommand } from "./UnmonitorAllCommand";
 import { DebugConfigsProvider, ICommand, IDebugCommands } from "./DebugConfigs";
+import { RequestAvailableSourceDirectoriesCommand } from "./RequestAvailableSourceDirectoriesCommand";
+import { FallbackDirectoriesFinder } from "./FallbackDirectoriesFinder";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -31,11 +32,16 @@ export class ExternalDebugAdapter implements DebugInterface {
 	private commands: IDebugCommands;
 	private executionFinishedRegularExpressions: string[];
 
+	/** Instance to look for source code on fallback directories */
+	private fallbackFinder: FallbackDirectoriesFinder;
+
 	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, configFilePath: string, traceFilePath: string, processProvider?: ProcessProvider) {
 		// Configuration to interact with external debug process
 		this.configs = new DebugConfigsProvider(configFilePath);
 		this.commands = this.configs.commands
 		this.executionFinishedRegularExpressions = this.configs.executionFinishedRegularExpressions;
+
+		this.fallbackFinder = new FallbackDirectoriesFinder(this);
 
 		// Spawns the external debug process itself
 		const commandTerminator = this.configs.commandTerminator;
@@ -96,7 +102,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 				return reject("Empty variable name");
 			}
 			const cmd = new RequestVariableValueCommand(this.commands.requestVariableValue);
-			this.sendCommand(cmd.buildCommand(args), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(args), cmd.getExpectedRegExes()).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((error) => {
 				return reject(error);
@@ -109,7 +115,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 			const cmd = new ChangeVariableValueCommand(this.commands.changeVariableValue);
 			const commandLine = cmd.buildCommand({ name: variable, value: newValue });
 			const regexes = cmd.getExpectedRegExes();
-			this.sendCommand(commandLine, regexes).then((output) => {
+			this.sendCommand(commandLine, regexes).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((e) => {
 				return reject(e);
@@ -120,7 +126,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	addMonitor(monitor: CobolMonitor): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			const cmd = new MonitorCommand(this.commands.addVariableMonitor);
-			this.sendCommand(cmd.buildCommand(monitor), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(monitor), cmd.getExpectedRegExes()).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((e) => {
 				return reject(e);
@@ -131,7 +137,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	removeMonitor(variable: string): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			const cmd = new UnmonitorCommand(this.commands.removeVariableMonitor);
-			this.sendCommand(cmd.buildCommand(variable), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(variable), cmd.getExpectedRegExes()).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((e) => {
 				return reject(e);
@@ -142,7 +148,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	removeAllMonitors(): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			const cmd = new UnmonitorAllCommand(this.commands.removeAllVariableMonitors);
-			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((e) => {
 				return reject(e);
@@ -162,7 +168,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	addBreakpointOnFirstLine(program: string): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			const cmd = new AddBreakpointOnFirstLineCommand(this.commands.addBreakpointOnFirstProgramLine);
-			this.sendCommand(cmd.buildCommand(program), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(program), cmd.getExpectedRegExes()).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((error) => {
 				return reject(error);
@@ -173,7 +179,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	private addBreakpointOnLocation(br: CobolParagraphBreakpoint): Promise<string> {
 		return new Promise((resolve, reject) => {
 			const cmd = new AddBreakpointCommand(this.commands.addBreakpointOnLocation);
-			this.sendCommand(cmd.buildCommand(br), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(br), cmd.getExpectedRegExes()).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((error) => {
 				return reject(error);
@@ -184,7 +190,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	listBreakpoints(): Promise<CobolBreakpoint[]> {
 		return new Promise((resolve, reject) => {
 			const cmd = new ListBreakpointsCommand(this.commands.listBreakpoints);
-			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((error) => {
 				return reject(error);
@@ -195,7 +201,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	removeBreakpoint(br: CobolBreakpoint): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			const cmd = new RemoveBreakpointCommand(this.commands.removeBreakpointFromLocation);
-			this.sendCommand(cmd.buildCommand(br), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(br), cmd.getExpectedRegExes()).then(output => {
 				return resolve(cmd.validateOutput(output));
 			}).catch((error) => {
 				return reject(error);
@@ -215,7 +221,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	private sendDebugPositionCommand(command: ICommand): Promise<DebugPosition> {
 		return new Promise((resolve, reject) => {
 			const cmd = new DebugPositionCommand(command);
-			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then((output) => {
+			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then(output => {
 				const position = cmd.validateOutput(output);
 				// Checks whether the debugger returned a valid debugging position
 				if (position) {
@@ -231,37 +237,32 @@ export class ExternalDebugAdapter implements DebugInterface {
 					} else {
 						// Makes another request to the external debugger process
 						// looking for current directory
-						this.requestCurrentDirectory().then((currentDir) => {
-							if (currentDir) {
+						this.requestCurrentDirectory().then(currentDir => {
+							const fileOnCurrentDirectory = currentDir ? this.fallbackFinder.lookForFileOnDirectory(currentDir, position.file) : undefined;
+							if (fileOnCurrentDirectory) {
 								// The position now contains a full path and VSCode API
 								// will properly show the file on editor
-								position.file = this.addSeparatorIfNeeded(currentDir.trim()) + position.file;
+								position.file = fileOnCurrentDirectory;
 								return resolve(position);
-							} else {
-								return reject("Couldn't find full path for " + position.file);
 							}
-						}).catch((error) => {
-							return reject(error);
-						});
+							this.fallbackFinder.lookForSourceOnFallbackDirectories(position.file).then(fullFileName => {
+								if (fullFileName) {
+									// The position now contains a full path and VSCode API
+									// will properly show the file on editor
+									position.file = fullFileName;
+									return resolve(position);
+								} else {
+									return reject("Couldn't find full path for " + position.file);
+								}
+							}).catch(error => reject(error));
+
+						}).catch(error => reject(error));
 					}
 				} else {
 					return reject();
 				}
-			}).catch((error) => {
-				return reject(error);
-			});
+			}).catch(error => reject(error));
 		});
-	}
-
-	/**
-	 * Adds a file separator to the specified directory, or returns the
-	 * directory itself if already ends with file separator
-	 */
-	private addSeparatorIfNeeded(directory: string): string {
-		if (directory.endsWith("\\") || directory.endsWith("/")) {
-			return directory;
-		}
-		return directory + path.sep;
 	}
 
 	/**
@@ -270,6 +271,26 @@ export class ExternalDebugAdapter implements DebugInterface {
 	private requestCurrentDirectory(): Promise<string | undefined> {
 		return this.requestVariableValue('-env user.dir');
 	}
+
+	/**
+	 * Requests the external debug process for fallback directories where the source file
+	 * could be located.
+	 */
+	public requestAvailableSourceDirectories(): Promise<string[] | undefined> {
+		if (this.commands.requestAvailableSourceDirectories) {
+			const cmd = new RequestAvailableSourceDirectoriesCommand(this.commands.requestAvailableSourceDirectories);
+			return new Promise((resolve, reject) => {
+				this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then(output => {
+					return resolve(cmd.validateOutput(output));
+				}).catch((error) => {
+					return reject(error);
+				});
+			})
+		} else {
+			return Promise.resolve(undefined);
+		}
+	}
+
 
 	/**
 	 * Sends command to external COBOL debugger expecting an output that matches with the specified regular expressions

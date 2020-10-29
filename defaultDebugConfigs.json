@@ -111,6 +111,10 @@
 		"listBreakpoints": {
 			"name": "break -l",
 			"successRegularExpression": "\\[line:\\s+(?<linenumber>[0-9]+)\\,\\s+file:\\s+(?<path>[\\w\\.]+).*\\]"
+		},
+		"requestAvailableSourceDirectories": {
+			"name": "display -env java.class.path",
+			"successRegularExpression": ".*java\\.class\\.path\\s+=\\s+(?<directories>.*)"
 		}
 	},
 	"executionFinishedRegularExpressions": [
