@@ -30,16 +30,28 @@ export class ExternalDebugAdapter implements DebugInterface {
 	/** Debug configuration */
 	private configs: DebugConfigsProvider;
 	private commands: IDebugCommands;
-	private executionFinishedRegularExpressions: string[];
+	private failRegexes: RegExp[];
+	private retriesRegexes?: RegExp[] | undefined;
 
 	/** Instance to look for source code on fallback directories */
 	private fallbackFinder: FallbackDirectoriesFinder;
 
-	constructor(commandLineToStartProcess: string, outputRedirector: (output: string) => void, configFilePath: string, traceFilePath: string, processProvider?: ProcessProvider) {
+	constructor(commandLineToStartProcess: string,
+                outputRedirector: (output: string) => void,
+                configFilePath: string,
+                traceFilePath: string,
+                processProvider?: ProcessProvider)
+	{
+
 		// Configuration to interact with external debug process
 		this.configs = new DebugConfigsProvider(configFilePath);
 		this.commands = this.configs.commands
-		this.executionFinishedRegularExpressions = this.configs.executionFinishedRegularExpressions;
+		this.failRegexes = this.createRegExpArray(this.configs.executionFinishedRegularExpressions);
+
+		// Regular expressions to retry command execution on external debugger
+		const retriesText = this.configs.retriesRegularExpressions;
+		this.retriesRegexes = retriesText ? this.createRegExpArray(retriesText)
+		                                  : undefined;
 
 		this.fallbackFinder = new FallbackDirectoriesFinder(this);
 
@@ -157,11 +169,11 @@ export class ExternalDebugAdapter implements DebugInterface {
 	}
 
 
-	addBreakpoint(br: CobolBreakpoint): Promise<string> {
+	addBreakpoint(br: CobolBreakpoint): Promise<string | undefined> {
 		return this.addBreakpointOnLocation({ paragraph: `${br.line}`, source: br.source, condition: br.condition });
 	}
 
-	addParagraphBreakpoint(br: CobolParagraphBreakpoint): Promise<string> {
+	addParagraphBreakpoint(br: CobolParagraphBreakpoint): Promise<string | undefined> {
 		return this.addBreakpointOnLocation(br);
 	}
 
@@ -176,7 +188,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 		});
 	}
 
-	private addBreakpointOnLocation(br: CobolParagraphBreakpoint): Promise<string> {
+	private addBreakpointOnLocation(br: CobolParagraphBreakpoint): Promise<string | undefined> {
 		return new Promise((resolve, reject) => {
 			const cmd = new AddBreakpointCommand(this.commands.addBreakpointOnLocation);
 			this.sendCommand(cmd.buildCommand(br), cmd.getExpectedRegExes()).then(output => {
@@ -300,13 +312,13 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 */
 	private sendCommand(command: string, expectedRegexes: RegExp[]): Promise<string> {
 		return new Promise((resolve, reject) => {
-			const failRegexes: RegExp[] = this.createRegExpArray(this.executionFinishedRegularExpressions);
 			this.debugProcess.sendCommand({
 				command: command,
 				successRegexes: expectedRegexes,
 				success: (output: string) => resolve(output),
-				failRegexes: failRegexes,
-				fail: (output: string) => reject(output)
+				failRegexes: this.failRegexes,
+				fail: (output: string) => reject(output),
+				retryRegexes: this.retriesRegexes
 			});
 		});
 	}

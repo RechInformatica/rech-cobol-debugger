@@ -124,7 +124,7 @@ export class CobolMonitorView implements TreeDataProvider<number> {
 	 * Refreshes the UI reflecting changes on current monitor Map
 	 */
 	public refresh(): void {
-		this._onDidChangeTreeData.fire();
+		this._onDidChangeTreeData.fire(undefined);
 	}
 
 	/**
