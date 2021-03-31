@@ -122,8 +122,11 @@
 		"java\\.lang\\.NoClassDefFoundError",
 		"Cannot\\s+load\\s+class\\s+",
 		"exit\\s+isdb",
-		"Debugger\\sis\\snot\\ssuspended",
 		"Exception\\s+caught\\s+at\\s+line"
+	],
+	"retriesRegularExpressions": [
+		"Waiting\\s+for\\s+a\\s+Debuggable\\s+thread",
+		"Debugger\\s+is\\s+not\\s+suspended"
 	],
 	"commandTerminator": "isdb>\\s*$"
 }

@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Configuration } from "../config/Configuration";
 
 /**
  * Class to provide command names and regular expressions to interact
@@ -24,6 +23,10 @@ export class DebugConfigsProvider {
 
 	get executionFinishedRegularExpressions(): string[] {
 		return this._configs.executionFinishedRegularExpressions;
+	}
+
+	get retriesRegularExpressions(): string[] | undefined {
+		return this._configs.retriesRegularExpressions;
 	}
 
 	get commandTerminator(): string {
@@ -50,6 +53,7 @@ export interface IDebugConfigs {
 
 	commands: IDebugCommands,
 	executionFinishedRegularExpressions: string[],
+	retriesRegularExpressions?: string[],
 	commandTerminator: string,
 
 }

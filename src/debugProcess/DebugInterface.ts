@@ -91,7 +91,7 @@ export interface DebugInterface {
 	 *
 	 * @param breakpoint breakpoint to set
 	 */
-	addBreakpoint(breakpoint: CobolBreakpoint): Promise<string>;
+	addBreakpoint(breakpoint: CobolBreakpoint): Promise<string | undefined>;
 
 	/**
 	 * Adds a breakpoint on the specified paragraph instead of
@@ -99,7 +99,7 @@ export interface DebugInterface {
 	 *
 	 * @param breakpoint breakpoint to set
 	 */
-	addParagraphBreakpoint(breakpoint: CobolParagraphBreakpoint): Promise<string>;
+	addParagraphBreakpoint(breakpoint: CobolParagraphBreakpoint): Promise<string | undefined>;
 
 	/**
 	 * Adds a breakpoint on the first executable line of the specified program

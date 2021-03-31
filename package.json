@@ -2,10 +2,10 @@
 	"name": "rech-cobol-debugger",
 	"displayName": "Rech COBOL Debugger",
 	"description": "Debug COBOL files with Visual Studio Code",
-	"version": "1.0.38",
+	"version": "1.0.39",
 	"publisher": "rechinformatica",
 	"engines": {
-		"vscode": "^1.43.0"
+		"vscode": "^1.47.0"
 	},
 	"icon": "images/debugger-logo.png",
 	"license": "SEE LICENSE IN LICENSE.txt",
@@ -44,7 +44,7 @@
 		"ts-node": "^7.0.1",
 		"typescript": "3.5.3",
 		"mocha": "6.2.0",
-		"vscode": "1.1.36",
+		"vscode": "1.1.37",
 		"vscode-debugadapter-testsupport": "1.37.0",
 		"tslint": "5.18.0",
 		"vsce": "1.66.0"

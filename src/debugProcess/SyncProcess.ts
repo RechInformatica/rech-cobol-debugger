@@ -143,6 +143,10 @@ export class SyncProcess {
 	 * @param command command to be handled
 	 */
 	private handleCommand(command: Command): void {
+		if (command.retryRegexes && this.responseMatches(this.lastResponse, command.retryRegexes)) {
+			this.fireCommand(command);
+			return;
+		}
 		if (this.responseMatches(this.lastResponse, command.successRegexes)) {
 			const terminatorRegExp = new RegExp(this.commandTerminator, "i");
 			if (terminatorRegExp.test(this.lastResponse)) {
@@ -184,6 +188,17 @@ export class SyncProcess {
 		if (command) {
 			this.writeComanndToProcessInput(command.command);
 		}
+	}
+
+	/**
+	 * Fires the execution of the given command
+	 *
+	 * @param command command to be executed
+	 */
+	private fireCommand(command: Command): void {
+		this.lastResponse = "";
+		this.currentCommand = command;
+		this.writeComanndToProcessInput(command.command);
 	}
 
 	/**
@@ -242,9 +257,13 @@ interface Command {
 	/**
 	 * Expected output regexes to know when command has failed
 	 */
-	failRegexes: RegExp[];
-	/**
-	 * Callback executed when command fails during it's execution
+	 failRegexes: RegExp[];
+	 /**
+	  * Callback executed when command fails during it's execution
+	  */
+	 fail: (output: string) => void;
+ 	/**
+	 * Expected output regexes to know when command has failed
 	 */
-	fail: (output: string) => void;
+	retryRegexes?: RegExp[];
 }

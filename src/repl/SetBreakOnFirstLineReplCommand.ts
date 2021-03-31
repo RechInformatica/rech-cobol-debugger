@@ -40,8 +40,10 @@ export class SetBreakOnFirstLineReplCommand implements ReplCommand {
 						//
 						// With this workaround we can find the full filename of the breakpoint
 						debugRuntime.addBreakpoint(bp).then((fullFileName) => {
-							const finalBreak: CobolBreakpoint = {line: bp.line, source: fullFileName, condition: ''};
-							this.addLineBreakCallback(finalBreak);
+							if (fullFileName) {
+								const finalBreak: CobolBreakpoint = {line: bp.line, source: fullFileName, condition: ''};
+								this.addLineBreakCallback(finalBreak);
+							}
 						}).catch();
 					}
 				}).catch();
