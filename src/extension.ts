@@ -1,6 +1,6 @@
 'use strict';
 
-import { ExtensionContext, commands, debug, DebugAdapterDescriptorFactory, languages, window } from 'vscode';
+import { ExtensionContext, commands, debug, DebugAdapterDescriptorFactory, languages } from 'vscode';
 import { CobolConfigurationProvider } from './provider/CobolConfigurationProvider';
 import { CobolDebugAdapterDescriptorFactory } from './provider/CobolDebugAdapterDescriptorFactory';
 import { CobolEvaluatableExpressionProvider } from './provider/CobolEvaluatableExpressionProvider';
