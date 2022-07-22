@@ -231,7 +231,7 @@ export class SyncProcess {
 					fs.appendFileSync(this.traceFilePath, buffer);
 				}
 			} catch (err) {
-				const errorMessage = err ? err.toString() : "Unknown error detected on SyncProcess while writing trace";
+				const errorMessage = err ? (err as Error).toString() : "Unknown error detected on SyncProcess while writing trace";
 				this.redirectOutput("Error detected while writing trace to file " + this.traceFilePath + ": " + errorMessage + "\n");
 			}
 		}

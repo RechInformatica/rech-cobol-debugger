@@ -1,4 +1,4 @@
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@vscode/debugprotocol';
 import { DebugInterface } from "../debugProcess/DebugInterface";
 import { window } from 'vscode';
 import Q from 'q';
