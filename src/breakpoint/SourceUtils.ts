@@ -1,4 +1,4 @@
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@vscode/debugprotocol';
 
 /** Position within String where colon is located */
 const WINDOWS_COLON_DRIVE_POSITION = 2;

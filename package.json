@@ -2,7 +2,7 @@
 	"name": "rech-cobol-debugger",
 	"displayName": "Rech COBOL Debugger",
 	"description": "Debug COBOL files with Visual Studio Code",
-	"version": "1.0.40",
+	"version": "1.0.41",
 	"publisher": "rechinformatica",
 	"engines": {
 		"vscode": "^1.47.0"
@@ -26,28 +26,28 @@
 		"vscode:prepublish": "npm run compile",
 		"package": "vsce package --out F:/DIV/VSCode/extension/market/rech-cobol-debugger/rech-cobol-debugger.vsix",
 		"compile": "npm run tslint && tsc -p ./",
-		"postinstall": "node ./node_modules/vscode/bin/install",
 		"test": "npm run compile && mocha -r ts-node/register ./src/test/**/*.test.ts",
 		"tslint": "tslint --project tsconfig.json --config tslint.json"
 	},
 	"dependencies": {
 		"@types/q": "^1.0.0",
+		"@vscode/debugadapter": "^1.56.1",
 		"await-notify": "1.0.1",
-		"q": "^1.4.1",
-		"vscode-debugadapter": "1.38.0-pre.4"
+		"q": "^1.4.1"
 	},
 	"devDependencies": {
-		"@types/node": "10.12.12",
-		"@types/mocha": "5.2.7",
 		"@types/chai": "4.1.6",
+		"@types/mocha": "5.2.7",
+		"@types/node": "^10.12.12",
+		"@types/vscode": "^1.69.0",
+		"@vscode/debugadapter-testsupport": "^1.56.1",
+		"@vscode/debugprotocol": "^1.56.1",
 		"chai": "4.2.0",
+		"mocha": "^10.0.0",
 		"ts-node": "^7.0.1",
-		"typescript": "3.5.3",
-		"mocha": "6.2.0",
-		"vscode": "1.1.37",
-		"vscode-debugadapter-testsupport": "1.37.0",
 		"tslint": "5.18.0",
-		"vsce": "1.66.0"
+		"typescript": "4.7.4",
+		"vsce": "^2.10.0"
 	},
 	"main": "./out/extension",
 	"activationEvents": [
