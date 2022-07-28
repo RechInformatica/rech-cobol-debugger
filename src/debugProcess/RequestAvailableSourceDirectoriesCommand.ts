@@ -26,7 +26,7 @@ export class RequestAvailableSourceDirectoriesCommand implements DebugCommand<vo
 		if (match && match.groups) {
 			const groups = match.groups;
 			const directories = groups[AVAILABLE_DIRECTORIES_NAMED_GROUP];
-			const splitted = directories.split(';');
+			const splitted = directories.split(/;|:/);
 			return splitted;
 		}
 	}
