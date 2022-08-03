@@ -134,7 +134,7 @@ describe('External debug adapter', () => {
     });
 
     it('Requests a variable value thas is not allocated', async () => {
-        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, "", "", new RequestValueNotAllocated());
+        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, "", "", "", new RequestValueNotAllocated());
         const result = await adapter.requestVariableValue('wninf-pro');
         expect(undefined).to.equal(result);
     });
