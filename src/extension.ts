@@ -1,6 +1,6 @@
 'use strict';
 
-import { ExtensionContext, commands, debug, DebugAdapterDescriptorFactory, languages, window } from 'vscode';
+import { ExtensionContext, commands, debug, DebugAdapterDescriptorFactory, languages } from 'vscode';
 import { CobolConfigurationProvider } from './provider/CobolConfigurationProvider';
 import { CobolDebugAdapterDescriptorFactory } from './provider/CobolDebugAdapterDescriptorFactory';
 import { CobolEvaluatableExpressionProvider } from './provider/CobolEvaluatableExpressionProvider';
@@ -103,7 +103,7 @@ function registerConfigurationProvider(context: ExtensionContext): void {
  * Register an adapter factory for 'COBOL' debug type
  */
 function registerDescriptorFactory(context: ExtensionContext, cobolStack: CobolStack): void {
-	const factory: DebugAdapterDescriptorFactory = new CobolDebugAdapterDescriptorFactory(cobolStack);
+	const factory: CobolDebugAdapterDescriptorFactory = new CobolDebugAdapterDescriptorFactory(cobolStack);
 	context.subscriptions.push(debug.registerDebugAdapterDescriptorFactory('COBOL', factory));
 	if ('dispose' in factory) {
 		context.subscriptions.push(factory);
