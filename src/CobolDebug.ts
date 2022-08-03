@@ -4,9 +4,9 @@
 
 import {
 	InitializedEvent, TerminatedEvent, StoppedEvent, OutputEvent,
-	Source, DebugSession, Thread, Scope, Handles, ContinuedEvent, Variable
-} from 'vscode-debugadapter';
-import { DebugProtocol } from 'vscode-debugprotocol';
+	Source, DebugSession, Thread, Scope, Handles, ContinuedEvent
+} from '@vscode/debugadapter';
+import { DebugProtocol } from '@vscode/debugprotocol';
 import { basename } from 'path';
 import { EventEmitter } from 'events';
 import { DebugInterface } from './debugProcess/DebugInterface';

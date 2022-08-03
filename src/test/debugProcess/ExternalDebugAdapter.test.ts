@@ -133,6 +133,12 @@ describe('External debug adapter', () => {
         expect('63617373656C202020202020202020').to.equal(result);
     });
 
+    it('Requests a variable value thas is not allocated', async () => {
+        const adapter = new ExternalDebugAdapter("dummyCommandLine", () => { }, "", "", new RequestValueNotAllocated());
+        const result = await adapter.requestVariableValue('wninf-pro');
+        expect(undefined).to.equal(result);
+    });
+
 });
 
 export abstract class BaseMockProvider implements ProcessProvider {
@@ -262,6 +268,16 @@ class RequestValueInHexProvider extends BaseMockProvider {
     getOutputContent(): string {
         return ' \n' +
             ' + w-dummy-var = 63617373656C202020202020202020\n' +
+            'isdb>';
+    }
+
+}
+
+class RequestValueNotAllocated extends BaseMockProvider {
+
+    getOutputContent(): string {
+        return ' \n' +
+            ' - Error: dynamic item not allocated "wninf-pro"\n' +
             'isdb>';
     }
 
