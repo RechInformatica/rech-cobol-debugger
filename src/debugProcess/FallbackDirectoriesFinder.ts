@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import { ExternalDebugAdapter } from "./ExternalDebugAdapter";
+import { execSync } from "child_process";
 
 /**
  * Class to look for files on fallback directories
@@ -9,8 +10,11 @@ export class FallbackDirectoriesFinder {
 
 	private cachedFiles: Map<string, string> = new Map();
 	private cachedAvailableSourceDirectories: string[] | undefined;
+	private externalPathResolver: string | undefined;
 
-	constructor(private externalDebugAdaptar: ExternalDebugAdapter) { }
+	constructor(private externalDebugAdaptar: ExternalDebugAdapter, externalPathResolver?: string) {
+		this.externalPathResolver = externalPathResolver;
+	}
 
 	public lookForSourceOnFallbackDirectories(fileName: string): Promise<string | undefined> {
 		return new Promise((resolve, reject) => {
@@ -37,7 +41,13 @@ export class FallbackDirectoriesFinder {
 	}
 
 	private lookForFileWithoutCache(currentDir: string, fileName: string): string | undefined {
-		const fileOnCurrentDirectory = this.addSeparatorIfNeeded(currentDir.trim()) + fileName;
+		let resolvedDir = currentDir;
+		try {
+			if (this.externalPathResolver && this.externalPathResolver.length != 0) {
+				resolvedDir = execSync(`${this.externalPathResolver} ${currentDir}`).toString();
+			}
+		} catch (e) {}
+		const fileOnCurrentDirectory = this.addSeparatorIfNeeded(resolvedDir.trim()) + fileName;
 		if (fs.existsSync(fileOnCurrentDirectory)) {
 			this.cachedFiles.set(fileName, fileOnCurrentDirectory);
 			return fileOnCurrentDirectory;

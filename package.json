@@ -2,7 +2,7 @@
 	"name": "rech-cobol-debugger",
 	"displayName": "Rech COBOL Debugger",
 	"description": "Debug COBOL files with Visual Studio Code",
-	"version": "1.0.41",
+	"version": "1.0.42",
 	"publisher": "rechinformatica",
 	"engines": {
 		"vscode": "^1.47.0"
@@ -151,6 +151,12 @@
 				"rech.cobol.debug.traceFile": {
 					"type": "string",
 					"description": "Path to the file where trace will be stored. When specified, every interaction with the external command-line debugger will be logged on this file.",
+					"default": ""
+				},
+				"rech.cobol.debug.externalPathResolver": {
+					"type": "string",
+					"title": "Command Line",
+					"description": "Command line to resolve path for remote debugger. This command will be called whenever a file path is not recognized passing the path as a parameter, useful for debugging on a different operating system than the current.",
 					"default": ""
 				}
 			}

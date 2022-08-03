@@ -119,7 +119,7 @@ function validateBreakpoint(expected: CobolBreakpoint, bp: CobolBreakpoint): voi
 class TestDebugAdapter extends ExternalDebugAdapter {
 
     constructor(processProvider: ProcessProvider) {
-        super("", () => { }, "", "", processProvider);
+        super("", () => { }, "", "", "", processProvider);
     }
 
 }
