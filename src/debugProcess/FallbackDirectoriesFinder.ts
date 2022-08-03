@@ -2,7 +2,6 @@ import * as path from "path";
 import * as fs from "fs";
 import { ExternalDebugAdapter } from "./ExternalDebugAdapter";
 import { execSync } from "child_process";
-import { Configuration } from "../config/Configuration";
 
 /**
  * Class to look for files on fallback directories
@@ -13,9 +12,8 @@ export class FallbackDirectoriesFinder {
 	private cachedAvailableSourceDirectories: string[] | undefined;
 	private externalPathResolver: string | undefined;
 
-	constructor(private externalDebugAdaptar: ExternalDebugAdapter) {
-		const configuration = new Configuration("rech.cobol.debug")
-		this.externalPathResolver = configuration.get<string>("externalPathResolver");
+	constructor(private externalDebugAdaptar: ExternalDebugAdapter, externalPathResolver?: string) {
+		this.externalPathResolver = externalPathResolver;
 	}
 
 	public lookForSourceOnFallbackDirectories(fileName: string): Promise<string | undefined> {

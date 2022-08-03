@@ -40,6 +40,7 @@ export class ExternalDebugAdapter implements DebugInterface {
                 outputRedirector: (output: string) => void,
                 configFilePath: string,
                 traceFilePath: string,
+                externalPathResolver: string,
                 processProvider?: ProcessProvider)
 	{
 
@@ -53,7 +54,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 		this.retriesRegexes = retriesText ? this.createRegExpArray(retriesText)
 		                                  : undefined;
 
-		this.fallbackFinder = new FallbackDirectoriesFinder(this);
+		this.fallbackFinder = new FallbackDirectoriesFinder(this, externalPathResolver);
 
 		// Spawns the external debug process itself
 		const commandTerminator = this.configs.commandTerminator;
