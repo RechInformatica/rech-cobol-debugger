@@ -2,7 +2,7 @@
 	"commands": {
 		"currentLineInfo": {
 			"name": "line",
-			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]+)"
+			"successRegularExpression": "^\\+*\\s+line=(?<linenumber>\\d+)\\s+file=(?<path>[\\w\\.:\\\/ \\-]*)"
 		},
 		"executeCurrentStatement": {
 			"name": "step",
