@@ -46,7 +46,8 @@
 				"Error:\\s+ambiguous\\s+identifier",
 				"unexpected\\s+error\\s+usage",
 				"syntax\\s+error",
-				"Error:\\s+dynamic\\s+item\\s+not\\s+allocated\\s+"
+				"Error:\\s+dynamic\\s+item\\s+not\\s+allocated\\s+",
+				"Dynamic\\s+item\\s+not\\s+allocated\\s+"
 			]
 		},
 		"changeVariableValue": {
