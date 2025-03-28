@@ -70,9 +70,10 @@ export class CobolEvaluatableExpressionProvider implements EvaluatableExpression
 		if (!sourceLine) {
 			return wordRange;
 		}
+		const editedSourceLine = sourceLine.substring(wordRange.start.character, sourceLine.length);
 
 		const occursPattern = new RegExp(`\\b${word}\\s*\\(([^()]*|\\([^()]*\\))*\\)`, "i");
-		const match = occursPattern.exec(sourceLine);
+		const match = occursPattern.exec(editedSourceLine);
 
 		if (match) {
 			const startIndex = sourceLine.indexOf(match[0]);
