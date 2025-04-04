@@ -517,8 +517,10 @@ export class CobolDebugSession extends DebugSession {
 		const parser = new VariableParser(this.debugRuntime);
 		parser.parse(this.currentDebuggerOutput).then((currentVariables) => {
 			parser.parse(this.lastDebuggerOutput).then((lastVariables) => {
+				const concatVariables = currentVariables.concat(lastVariables);
+				const uniqueVariables = Array.from(new Map(concatVariables.map(v => [v.name, v])).values());
 				response.body = {
-					variables: currentVariables.concat(lastVariables)
+					variables: uniqueVariables
 				};
 				this.sendResponse(response);
 			}).catch(() => {

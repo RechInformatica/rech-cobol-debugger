@@ -54,22 +54,36 @@ export class VariableParser {
 	 * @param output debugger output
 	 */
 	private extractNamesFromOutput(output: string): string[] {
-		const names: string[] = []
-		const parts = output.substring(output.indexOf("line=")).split("\n")
-		const pattern = /[a-zA-Z0-9ÇéâäàçêëèïîÄôöòûùÖÜáíóúñÑÁÂÀãÃÊËÈÍÎÏÌÓÔÒõÕÚÛÙüÉì_\\-]+/g;
+		const names: string[] = [];
+		const parts = output.substring(output.indexOf("line=")).split("\n");
+		const pattern = /[a-zA-Z0-9ÇéâäàçêëèïîÄôöòûùÖÜáíóúñÑÁÂÀãÃÊËÈÍÎÏÌÓÔÒõÕÚÛÙüÉì_\\-]+(\((?:[^()]*|\([^()]*\))*\))?/g;
 		const currentLinePosition = 1;
 		if (parts.length > currentLinePosition) {
 			const currentLine = this.removeLanguageTokensFromLine(parts[currentLinePosition]);
-			let word = pattern.exec(currentLine);
-			while (word) {
-				const textWord = word.toString();
+			let match = pattern.exec(currentLine);
+			while (match) {
+				let textWord = match[0];
+				textWord = this.removeFunctionPrefixes(textWord);
 				if (this.isVariableName(textWord)) {
 					names.push(textWord);
 				}
-				word = pattern.exec(currentLine);
+				match = pattern.exec(currentLine);
 			}
 		}
 		return names;
+	}
+
+	/**
+	 * Removes function-like prefixes from a word, leaving only the variable name.
+	 *
+	 * @param word The word to process.
+	 * @returns The word without function-like prefixes.
+	 */
+	private removeFunctionPrefixes(word: string): string {
+		const VARIABLE_POSITION = 2;
+		const functionPattern = /^(ABS|ABSOLUTE-VALUE|ACOS|ANNUITY|ASIN|ATAN|BIN2DEC|BOOLEAN-OF-INTEGER|BYTE-LENGTH|CAPACITY|CHAR|COMPILED-INFO|COS|CURRENT-DATE|DATE-OF-INTEGER|DATE-TO-YYYYMMDD|DAY-OF-INTEGER|DAY-TO-YYYYMMDD|DEC2BIN|DEC2HEX|DEC2OCT|DISPLAY-OF|E|EXP|EXP10|FACTORIAL|FRACTION-PART|HANDLE-TYPE|HEX2DEC|INTEGER|INTEGER-OF-BOOLEAN|INTEGER-OF-DATE|INTEGER-OF-DAY|INTEGER-PART|LENGTH|LOG|LOG10|LOWER-CASE|MAX|MEAN|MEDIAN|MIDRANGE|MIN|MOD|NATIONAL-OF|NUMVAL|NUMVAL-C|NUMVAL-F|OCT2DEC|ORD|ORD-MAX|ORD-MIN|PI|PRESENT-VALUE|RANDOM|RANGE|REM|REVERSE|SIGN|SIN|SQRT|STANDARD-DEVIATION|SUM|TAN|TEST-NUMVAL|TEST-NUMVAL-C|TEST-NUMVAL-F|TRIM|TRIML|TRIMR|UPPER-CASE|VARIANCE|WHEN-COMPILED|YEAR-TO-YYYY)\((.*)\)$/i;
+		const match = functionPattern.exec(word);
+		return match ? match[VARIABLE_POSITION] : word;
 	}
 
 	/**
