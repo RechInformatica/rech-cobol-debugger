@@ -56,18 +56,36 @@ export class VariableParser {
 	private extractNamesFromOutput(output: string): string[] {
 		const names: string[] = [];
 		const parts = output.substring(output.indexOf("line=")).split("\n");
-		const pattern = /[a-zA-Z0-9ÇéâäàçêëèïîÄôöòûùÖÜáíóúñÑÁÂÀãÃÊËÈÍÎÏÌÓÔÒõÕÚÛÙüÉì_\\-]+(\((?:[^()]*|\([^()]*\))*\))?/g;
-		const currentLinePosition = 1;
-		if (parts.length > currentLinePosition) {
-			const currentLine = this.removeLanguageTokensFromLine(parts[currentLinePosition]);
-			let match = pattern.exec(currentLine);
-			while (match) {
-				let textWord = match[0];
+		for (let i = 1; i < parts.length; i++) {
+			const currentLine = this.removeLanguageTokensFromLine(parts[i]);
+			const regex = /\b[a-zA-Z0-9ÇéâäàçêëèïîÄôöòûùÖÜáíóúñÑÁÂÀãÃÊËÈÍÎÏÌÓÔÒõÕÚÛÙüÉì_\-]+/g;
+			const tokens: string[] = [];
+			let match: RegExpExecArray | null;
+
+			while ((match = regex.exec(currentLine)) !== null) {
+				let token = match[0];
+				const startIndex = match.index;
+				const endIndex = startIndex + token.length;
+				if (currentLine[endIndex] === '(') {
+					const nextCloseParen = currentLine.indexOf(')', endIndex + 1);
+					if (nextCloseParen !== -1) {
+						const contentInside = currentLine.substring(endIndex + 1, nextCloseParen);
+						if (!contentInside.includes('(') && !contentInside.includes(')')) {
+							token = currentLine.substring(startIndex, nextCloseParen + 1);
+							regex.lastIndex = nextCloseParen + 1;
+						}
+					}
+				}
+
+				tokens.push(token);
+			}
+
+			for (const token of tokens) {
+				let textWord = token;
 				textWord = this.removeFunctionPrefixes(textWord);
 				if (this.isVariableName(textWord)) {
 					names.push(textWord);
 				}
-				match = pattern.exec(currentLine);
 			}
 		}
 		return names;
@@ -134,7 +152,7 @@ export class VariableParser {
 	 * @param word current word of the line
 	 */
 	private isVariableName(word: string): boolean {
-		if (COBOL_RESERVED_WORDS.indexOf(word) >= 0) {
+		if (COBOL_RESERVED_WORDS.indexOf(word.toLowerCase()) >= 0) {
 			return false;
 		}
 		if (this.createOnlyNumbersRegex().test(word)) {
