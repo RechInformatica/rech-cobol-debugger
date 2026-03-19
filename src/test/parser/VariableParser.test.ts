@@ -38,6 +38,7 @@ class MockDebugInterface implements DebugInterface {
     addParagraphBreakpoint(_breakpoint: CobolParagraphBreakpoint): Promise<string | undefined> { return Promise.resolve(undefined); }
     addBreakpointOnFirstLine(_program: string): Promise<boolean> { return Promise.resolve(true); }
     sendRawCommand(_cmd: string): Promise<string> { return Promise.resolve('ok'); }
+    requestCallStack(): Promise<import('../../debugProcess/CobolStackFrame').CobolStackFrame[]> { return Promise.resolve([]); }
     onOutput() { }
     onStopped() { }
     onContinued() { }

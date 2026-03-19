@@ -18,6 +18,8 @@ import { UnmonitorAllCommand } from "./UnmonitorAllCommand";
 import { DebugConfigsProvider, ICommand, IDebugCommands } from "./DebugConfigs";
 import { RequestAvailableSourceDirectoriesCommand } from "./RequestAvailableSourceDirectoriesCommand";
 import { FallbackDirectoriesFinder } from "./FallbackDirectoriesFinder";
+import { InfoStackCommand } from "./InfoStackCommand";
+import { CobolStackFrame } from "./CobolStackFrame";
 
 /**
  * Class to interact with external debugger, sending commands and parsing it's outputs.
@@ -37,12 +39,11 @@ export class ExternalDebugAdapter implements DebugInterface {
 	private fallbackFinder: FallbackDirectoriesFinder;
 
 	constructor(commandLineToStartProcess: string,
-                outputRedirector: (output: string) => void,
-                configFilePath: string,
-                traceFilePath: string,
-                externalPathResolver: string,
-                processProvider?: ProcessProvider)
-	{
+		outputRedirector: (output: string) => void,
+		configFilePath: string,
+		traceFilePath: string,
+		externalPathResolver: string,
+		processProvider?: ProcessProvider) {
 
 		// Configuration to interact with external debug process
 		this.configs = new DebugConfigsProvider(configFilePath);
@@ -52,7 +53,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 		// Regular expressions to retry command execution on external debugger
 		const retriesText = this.configs.retriesRegularExpressions;
 		this.retriesRegexes = retriesText ? this.createRegExpArray(retriesText)
-		                                  : undefined;
+			: undefined;
 
 		this.fallbackFinder = new FallbackDirectoriesFinder(this, externalPathResolver);
 
@@ -304,6 +305,61 @@ export class ExternalDebugAdapter implements DebugInterface {
 		}
 	}
 
+	/**
+	 * Requests the call stack from the external debugger.
+	 * @returns A promise resolving to the call stack frames.
+	 */
+	requestCallStack(): Promise<CobolStackFrame[]> {
+		return new Promise((resolve, reject) => {
+			if (!this.commands.infoStack) {
+				return reject("infoStack command not configured");
+			}
+			const cmd = new InfoStackCommand(this.commands.infoStack);
+			this.sendCommand(cmd.buildCommand(), cmd.getExpectedRegExes()).then(output => {
+				const frames = cmd.validateOutput(output);
+				this.resolveCallStackSources(frames).then(resolved => resolve(resolved)).catch(() => resolve(frames));
+			}).catch((error) => {
+				return reject(error);
+			});
+		});
+	}
+
+	/**
+	 * Resolves source file names from infostack output into full paths when possible.
+	 * Uses the same strategy already used by debug position resolution.
+	 */
+	private resolveCallStackSources(frames: CobolStackFrame[]): Promise<CobolStackFrame[]> {
+		return frames.reduce((chain, frame) => {
+			return chain.then(resolved => {
+				return this.resolveFrameSourcePath(frame).then(located => {
+					resolved.push(located);
+					return resolved;
+				}).catch(() => {
+					resolved.push(frame);
+					return resolved;
+				});
+			});
+		}, Promise.resolve([] as CobolStackFrame[]));
+	}
+
+	/**
+	 * Resolves a frame source file name into a full file path when available.
+	 */
+	private resolveFrameSourcePath(frame: CobolStackFrame): Promise<CobolStackFrame> {
+		return new Promise((resolve, reject) => {
+			if (!frame.file || frame.file.includes("\\") || frame.file.includes("/")) {
+				return resolve(frame);
+			}
+
+			this.fallbackFinder.lookForSourceOnFallbackDirectories(frame.file!).then(fullFileName => {
+				if (fullFileName) {
+					return resolve({ ...frame, file: fullFileName });
+				}
+				return resolve(frame);
+			}).catch(error => reject(error));
+		});
+	}
+
 
 	/**
 	 * Sends command to external COBOL debugger expecting an output that matches with the specified regular expressions
@@ -312,6 +368,7 @@ export class ExternalDebugAdapter implements DebugInterface {
 	 * @param expectedRegexes regular expressions to match debugger output
 	 */
 	private sendCommand(command: string, expectedRegexes: RegExp[]): Promise<string> {
+
 		return new Promise((resolve, reject) => {
 			this.debugProcess.sendCommand({
 				command: command,

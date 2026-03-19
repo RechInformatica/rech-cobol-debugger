@@ -20,6 +20,7 @@ import { CobolBreakpoint } from './breakpoint/CobolBreakpoint';
 import { CobolStack } from './CobolStack';
 import { Configuration } from './config/Configuration';
 import * as fs from "fs";
+import { CobolStackFrame } from './debugProcess/CobolStackFrame';
 
 /** Scope of current variables */
 const CURRENT_VARIABLES_SCOPE_NAME = "Current variables";
@@ -56,6 +57,8 @@ export class CobolDebugSession extends DebugSession {
 	private breakpointManager: BreakpointManager | undefined;
 	/** Indicates wheter the code is running or not */
 	private running: boolean = false;
+	/** Promise for the stack trace request */
+	private stackTraceRequestPromise: Promise<CobolStackFrame[]> | undefined;
 	/** Variables currently watched */
 	private watchedVariables: WatchedVariable[] = [];
 
@@ -193,17 +196,35 @@ export class CobolDebugSession extends DebugSession {
 	}
 
 	protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, _args: DebugProtocol.StackTraceArguments): void {
-		response.body = {
-			stackFrames: [{
-				id: 1,
-				column: 1,
-				line: this.cobolStack.currentLineNumber,
-				name: "Current",
-				source: new Source(this.cobolStack.currentSourceName)
-			}],
-			totalFrames: 1
-		};
-		this.sendResponse(response);
+		// If the debug runtime is not ready or the code is running, we return an empty stack trace
+		if (!this.debugRuntime || this.running) {
+			return this.sendResponse(response);
+		}
+
+		// To avoid multiple simultaneous stack trace requests, we use a promise to queue them.
+		if (!this.stackTraceRequestPromise) {
+			this.stackTraceRequestPromise = this.debugRuntime.requestCallStack();
+		}
+
+		void this.stackTraceRequestPromise.then((frames) => {
+				const stackFrames = frames.map((frame, index) => {
+					const isCurrentFrame = index === 0;
+					const line = isCurrentFrame ? this.cobolStack.currentLineNumber : (frame.line !== undefined ? frame.line : 0);
+					const filePath = isCurrentFrame ? this.cobolStack.currentSourceName : frame.file;
+					const source = filePath ? new Source(filePath) : undefined;
+					return { id: index + 1, column: 1, line, name: `${frame.paragraph} [${frame.program}]`, source };
+				});
+				response.body = { stackFrames, totalFrames: stackFrames.length };
+				this.sendResponse(response);
+			}).catch(() => {
+				response.body = {
+					stackFrames: [{ id: 1, column: 1, line: this.cobolStack.currentLineNumber, name: "Current", source: new Source(this.cobolStack.currentSourceName) }],
+					totalFrames: 1
+				};
+				this.sendResponse(response);
+			}).finally(() => {
+				this.stackTraceRequestPromise = undefined;
+			});
 	}
 
 	protected nextRequest(response: DebugProtocol.NextResponse, _args: DebugProtocol.NextArguments): void {
