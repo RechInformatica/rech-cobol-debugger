@@ -2,6 +2,7 @@ import { DebugPosition } from "./DebugPosition";
 import { CobolBreakpoint } from "../breakpoint/CobolBreakpoint";
 import { CobolParagraphBreakpoint } from "../breakpoint/CobolParagraphBreakpoint";
 import { CobolMonitor } from "../monitor/CobolMonitor";
+import { CobolStackFrame } from "./CobolStackFrame";
 
 export interface DebugInterface {
 
@@ -127,5 +128,11 @@ export interface DebugInterface {
 	 * @param command command to be sent to external debugger
 	 */
 	sendRawCommand(command: string): void;
+
+	/**
+	 * Requests the call stack from the external debugger.
+	 * Returns an array of stack frames ordered from innermost (current) to outermost.
+	 */
+	requestCallStack(): Promise<CobolStackFrame[]>;
 
 }
