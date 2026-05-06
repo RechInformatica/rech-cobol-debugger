@@ -47,7 +47,9 @@
 				"unexpected\\s+error\\s+usage",
 				"syntax\\s+error",
 				"Error:\\s+dynamic\\s+item\\s+not\\s+allocated\\s+",
-				"Dynamic\\s+item\\s+not\\s+allocated\\s+"
+				"Dynamic\\s+item\\s+not\\s+allocated\\s+",
+				"no\\s+such\\s+method\\s+",
+				"no\\s+such\\s+program\\s+"
 			]
 		},
 		"changeVariableValue": {
